@@ -261,6 +261,9 @@ def summary_detail_test(memo, total_summary):
             list_queue_length_seg = [float('inf')] * num_seg
             list_queue_length_id_seg = [0] * num_seg
             list_duration_id_seg = [0] * num_seg
+
+            sig_switch_time_arr = []
+
             for inter_index in range(num_intersection):
 
                 try:
@@ -271,8 +274,24 @@ def summary_detail_test(memo, total_summary):
                     f = open(os.path.join(round_dir, "inter_{0}.pkl".format(inter_index)), "rb")
                     samples = pkl.load(f)
                     queue_length_each_inter_each_round = 0
+                    
+                    curr_ssta = []
+                    past_phase = 1
+                    time_this_phase = 0
+                    
                     for sample in samples:
                         queue_length_each_inter_each_round += sum(sample['state']['lane_num_vehicle_been_stopped_thres1'])
+                        # Check for current phase and update the past phase and sig_switch_time_arr
+
+                        curr_phase = sample['state']['cur_phase']
+
+                        if not(curr_phase) == past_phase:
+                            curr_ssta.append(time_this_phase)
+                            past_phase = curr_phase
+                        else:
+                            time_this_phase = sample['state']['time_this_phase'][0]
+
+                    sig_switch_time_arr.append(curr_ssta)
                     queue_length_each_inter_each_round = queue_length_each_inter_each_round//len(samples)
                     f.close()
 
@@ -315,9 +334,41 @@ def summary_detail_test(memo, total_summary):
                     queue_length_each_round.append(queue_length_each_inter_each_round)
 
                 except:
+                    print(inter_index, "NAN set")
                     queue_length_each_round.append(NAN_LABEL)
                     # num_of_vehicle_in.append(NAN_LABEL)
                     # num_of_vehicle_out.append(NAN_LABEL)
+
+            if len(sig_switch_time_arr) > 0:
+
+                safe_thresh = 15
+
+                int_weight_score_arr = []
+
+                # Compute the cost
+
+                for idx in range(len(sig_switch_time_arr)):
+                    curr_int = np.array(sig_switch_time_arr[idx])
+
+                    diff_arr = safe_thresh - curr_int
+                    diff_arr[diff_arr < 0] = 0
+
+                    num_pts = np.sum(diff_arr > 0)
+
+                    if num_pts > 0:
+                        mean_squared_violation = np.sum(np.power(diff_arr, 2)) / num_pts
+                    else:
+                        mean_squared_violation = 0
+
+                    int_weight_score_arr.append([num_pts, mean_squared_violation])
+
+                print(sig_switch_time_arr)
+
+                int_weight_score_arr = np.array(int_weight_score_arr)
+                final_cost = np.dot((int_weight_score_arr[:, 0] / np.sum(int_weight_score_arr[:, 0])), int_weight_score_arr[:, 1])
+                print(int_weight_score_arr)
+                print("Final cost (quick switching)", final_cost)
+
 
             if len(df_vehicle_all)==0:
                 print("====================================EMPTY")
@@ -455,6 +506,21 @@ def summary_detail_test(memo, total_summary):
     performance_at_min_duration_round_plot(performance_at_min_duration_round, figure_dir, mode_name="test")
 
 
+
+anon_phase_map = {
+    # 0: [0, 0, 0, 0, 0, 0, 0, 0],
+    1: [0, 1, 0, 1, 0, 0, 0, 0],# 'WSES',
+    2: [0, 0, 0, 0, 0, 1, 0, 1],# 'NSSS',
+    3: [1, 0, 1, 0, 0, 0, 0, 0],# 'WLEL',
+    4: [0, 0, 0, 0, 1, 0, 1, 0]# 'NLSL',
+    # 'WSWL',
+    # 'ESEL',
+    # 'WSES',
+    # 'NSSS',
+    # 'NSNL',
+    # 'SSSL',
+}
+
 ##TODO multi-intersection
 def summary_detail_baseline(memo):
 
@@ -466,10 +532,14 @@ def summary_detail_baseline(memo):
         ANON_ENV = False
 
 
+        print(traffic_file)
+
         if ".xml" not in traffic_file and "anon" not in traffic_file:
             continue
         if "anon" in traffic_file:
             ANON_ENV = True
+
+        print("Processing", traffic_file)
 
         exp_conf = open(os.path.join(records_dir, traffic_file, "exp.conf"), 'r')
         dic_exp_conf = json.load(exp_conf)
@@ -477,13 +547,17 @@ def summary_detail_baseline(memo):
 
         avg_pressure = 0
 
-        print(traffic_file)
-
         train_dir = os.path.join(records_dir, traffic_file)
+
+        print(train_dir)
+
+        sig_switch_time_arr = []
 
         if os.path.getsize(os.path.join(train_dir, "inter_0.pkl")) > 0:
             with open(os.path.join(records_dir, traffic_file, 'agent.conf'), 'r') as agent_conf:
                 dic_agent_conf = json.load(agent_conf)
+
+            print(dic_agent_conf)
 
             df_vehicle = []
             NUM_OF_INTERSECTIONS = int(traffic_file.split('_')[1])*int(traffic_file.split('_')[2])
@@ -491,14 +565,39 @@ def summary_detail_baseline(memo):
             list_f = ["inter_%d.pkl" % i for i in range(int(NUM_OF_INTERSECTIONS))]
 
             for f in list_f:
+
+                curr_ssta = []
+                print("Processing", f)
+
                 pressure_each_inter = 0
 
                 node_index = f.split('inter_')[1].split('.pkl')[0]
+
                 print("node",node_index)
+
                 f = open(os.path.join(train_dir, f), "rb")
+
                 samples = pkl.load(f)
+
+                print("Num samples", len(samples))
+
+                past_phase = 1
+                time_this_phase = 0
+
                 for sample in samples:
                     pressure_each_inter += sum((sample['state']['lane_num_vehicle_been_stopped_thres1']))
+
+                    # Check for current phase and update the past phase and sig_switch_time_arr
+
+                    curr_phase = sample['state']['cur_phase']
+
+                    if not(curr_phase) == past_phase:
+                        curr_ssta.append(time_this_phase)
+                        past_phase = curr_phase
+                    else:
+                        time_this_phase = sample['state']['time_this_phase'][0]
+
+
                 f.close()
 
                 pressure_each_inter = pressure_each_inter/len(samples)
@@ -524,6 +623,8 @@ def summary_detail_baseline(memo):
                 df_vehicle.append(df_vehicle_inter_0)
                 print(df_vehicle_inter_0.groupby(['flow_id'])['duration'].mean()) # mean for every intersection
 
+                sig_switch_time_arr.append(curr_ssta)
+
             df_vehicle = pd.concat(df_vehicle,axis=0)
 
             flow_df = df_vehicle.groupby(['flow_id', 'car_id']).sum()
@@ -547,6 +648,34 @@ def summary_detail_baseline(memo):
             total_summary.append([traffic_file,ave_duration_all, avg_pressure,flow_df.shape[0],car_num_out,dic_agent_conf["FIXED_TIME"],arterial_duration,side_street_duration])
         else:
             shutil.rmtree(train_dir)
+
+    safe_thresh = 15
+
+    int_weight_score_arr = []
+
+    # Compute the cost
+
+    for idx in range(len(sig_switch_time_arr)):
+        curr_int = np.array(sig_switch_time_arr[idx])
+        num_pts = len(curr_int)
+
+        diff_arr = safe_thresh - curr_int
+        diff_arr[diff_arr < 0] = 0
+
+        num_pts = np.sum(diff_arr > 0)
+
+        if num_pts > 0:
+            mean_squared_violation = np.sum(np.power(diff_arr, 2)) / num_pts
+        else:
+            mean_squared_violation = 0
+
+        int_weight_score_arr.append([num_pts, mean_squared_violation])
+
+    int_weight_score_arr = np.array(int_weight_score_arr)
+    final_cost = np.dot((int_weight_score_arr[:, 0] / np.sum(int_weight_score_arr[:, 0])), int_weight_score_arr[:, 1])
+    print(int_weight_score_arr)
+    print("Final cost (quick switching)", final_cost)
+
 
     total_summary = pd.DataFrame(total_summary)
     total_summary.sort_values([0], ascending=[True], inplace=True)
