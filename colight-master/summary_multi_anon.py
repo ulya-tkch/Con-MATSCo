@@ -284,8 +284,7 @@ def summary_detail_test(memo, total_summary):
                         # Check for current phase and update the past phase and sig_switch_time_arr
 
                         curr_phase = sample['state']['cur_phase']
-
-                        if not(curr_phase) == past_phase:
+                        if not(curr_phase == past_phase):
                             curr_ssta.append(time_this_phase)
                             past_phase = curr_phase
                         else:
@@ -581,17 +580,31 @@ def summary_detail_baseline(memo):
 
                 print("Num samples", len(samples))
 
-                past_phase = 1
+                past_phase = None
                 time_this_phase = 0
 
+                i = 0
+
+                print('Node idx', node_index)
+
                 for sample in samples:
+                    if i < 40 and node_index == 0:
+                        print(sample)
+                        i += 1
                     pressure_each_inter += sum((sample['state']['lane_num_vehicle_been_stopped_thres1']))
 
                     # Check for current phase and update the past phase and sig_switch_time_arr
 
+                    print(sample['state']['time_this_phase'][0], end=',')
+
                     curr_phase = sample['state']['cur_phase']
 
-                    if not(curr_phase) == past_phase:
+                    if past_phase == None:
+                        past_phase = curr_phase
+                    elif not(curr_phase == past_phase):
+                        if past_phase == [-1]:
+                            past_phase = curr_phase
+                            continue
                         curr_ssta.append(time_this_phase)
                         past_phase = curr_phase
                     else:
@@ -658,6 +671,8 @@ def summary_detail_baseline(memo):
     for idx in range(len(sig_switch_time_arr)):
         curr_int = np.array(sig_switch_time_arr[idx])
         num_pts = len(curr_int)
+
+        print(idx, curr_int)
 
         diff_arr = safe_thresh - curr_int
         diff_arr[diff_arr < 0] = 0
@@ -809,8 +824,8 @@ if __name__ == "__main__":
     args = parse_args_sum()
 
     # args.memo = "0515_afternoon_Colight_6_6_bi"
-    # args.memo = "0509_evening_Fixedtime_6_6_bi"
-    args.memo = "0509_evening_MaxPressure_6_6_bi"
+    args.memo = "0509_evening_Fixedtime_6_6_bi"
+    # args.memo = "0509_evening_MaxPressure_6_6_bi"
     args.b = True
 
 

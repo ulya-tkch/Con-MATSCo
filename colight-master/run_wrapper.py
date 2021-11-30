@@ -20,9 +20,9 @@ if __name__ == '__main__':
 
 	# Populate the params used to uniquely store the results, logs etc.
 
-	date = '07' 	# Expected to be a length 2 string which is the date of run
+	date = '27' 	# Expected to be a length 2 string which is the date of run
 	month = '11'	# Expected to be a length 2 string which is the month of run
-	hour = '19'		# Expected to be a length 2 string which is the hour of run
+	hour = '22'		# Expected to be a length 2 string which is the hour of run
 	ident = 'test'	# Expected to be a string of your choosing that can ensure uniqueness
 
 	# Initialize control variables related to model training
@@ -50,7 +50,7 @@ if __name__ == '__main__':
 
 	# Initialize flags to direct run flow
 
-	run_train = True
+	run_train = False
 	run_eval = True
 
 	# Prepare a few variables
