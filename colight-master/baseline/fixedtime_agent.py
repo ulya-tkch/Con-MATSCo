@@ -14,6 +14,8 @@ class FixedtimeAgent(Agent):
 
         self.current_phase_time = 0
 
+        self.simulator_type = self.dic_traffic_env_conf["SIMULATOR_TYPE"]
+
         if self.dic_traffic_env_conf["SIMULATOR_TYPE"] == "anon":
             self.DIC_PHASE_MAP = {
                 1: 0,
@@ -43,12 +45,18 @@ class FixedtimeAgent(Agent):
         #print(state)
         # print(state["time_this_phase"][0], self.dic_agent_conf["FIXED_TIME"][cur_phase], cur_phase)
 
+        safety_limit = 15
+
+        # print(cur_phase, state["time_this_phase"][0])
+
         if self.dic_traffic_env_conf["ACTION_PATTERN"] == "set":
-            if state["time_this_phase"][0] >= self.dic_agent_conf["FIXED_TIME"][cur_phase] and cur_phase != -1:
+            if state["time_this_phase"][0] >= self.dic_agent_conf["FIXED_TIME"][cur_phase] and cur_phase != -1 and state["time_this_phase"][0] >= safety_limit:
+                # print("Choosing change in phase", state["time_this_phase"][0])
                 self.current_phase_time = 0
-                self.action = (cur_phase + 1) % len(self.dic_traffic_env_conf["PHASE"])
-                return (cur_phase + 1) % len(self.dic_traffic_env_conf["PHASE"])
+                self.action = (cur_phase + 1) % len(self.dic_traffic_env_conf["PHASE"][self.simulator_type])
+                return (cur_phase + 1) % len(self.dic_traffic_env_conf["PHASE"][self.simulator_type])
             else:
+                # print("Staying in same phase", state["time_this_phase"][0])
                 self.action = cur_phase
                 self.current_phase_time += 1
                 return cur_phase

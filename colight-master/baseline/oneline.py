@@ -162,6 +162,12 @@ class OneLine:
 
     def train(self):
         print("start train")
+
+        print("DIC EXP CONF", self.dic_exp_conf)
+        print("DIC AGENT CONF", self.dic_agent_conf)
+        print("DIC TRAFFIC ENV CONF", self.dic_traffic_env_conf)
+        print("Number of phases", len(self.dic_traffic_env_conf["PHASE"]))
+
         total_run_cnt = self.dic_exp_conf["RUN_COUNTS"]
 
         # initialize output streams
@@ -209,6 +215,8 @@ class OneLine:
 
             state = next_state
             step_num += 1
+
+        print(step_num)
 
         if self.dic_traffic_env_conf['DEBUG']:
                 print("Training time: ",time.time()-start_time)

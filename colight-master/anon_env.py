@@ -288,6 +288,7 @@ class Intersection:
             if self.current_phase_duration >= yellow_time: # yellow time reached
                 self.current_phase_index = self.next_phase_to_set_index
                 self.eng.set_tl_phase(self.inter_name, self.current_phase_index) # if multi_phase, need more adjustment
+                # print("Changing to phase", self.current_phase_index, "After time", self.current_phase_duration, "for inter", self.inter_name)
                 path_to_log_file = os.path.join(self.path_to_log, "signal_inter_{0}.txt".format(self.inter_name))
                 df = [self.get_current_time(), self.current_phase_index]
                 df = pd.DataFrame(df)
@@ -897,12 +898,17 @@ class AnonEnv:
         step_start_time = time.time()
         list_action_in_sec = [action]
         list_action_in_sec_display = [action]
+
+        # print(self.dic_traffic_env_conf["MIN_ACTION_TIME"])
+
         for i in range(self.dic_traffic_env_conf["MIN_ACTION_TIME"]-1):
             if self.dic_traffic_env_conf["ACTION_PATTERN"] == "switch":
                 list_action_in_sec.append(np.zeros_like(action).tolist())
             elif self.dic_traffic_env_conf["ACTION_PATTERN"] == "set":
                 list_action_in_sec.append(np.copy(action).tolist())
             list_action_in_sec_display.append(np.full_like(action, fill_value=-1).tolist())
+
+        # print(len(list_action_in_sec), len(list_action_in_sec[0]))
 
         average_reward_action_list = [0]*len(action)
         for i in range(self.dic_traffic_env_conf["MIN_ACTION_TIME"]):
@@ -918,6 +924,7 @@ class AnonEnv:
 
             if self.dic_traffic_env_conf['DEBUG']:
                 print("time: {0}".format(instant_time))
+                print(action_in_sec)
             else:
                 if i == 0:
                     print("time: {0}".format(instant_time))

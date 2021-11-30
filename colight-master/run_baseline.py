@@ -120,7 +120,7 @@ def main_base(memo, rall, road_net, env, gui, volume, ratio, model,count,lane):
             "NUM_AGENTS": num_intersections,
             "NUM_INTERSECTIONS": num_intersections,
             "ACTION_PATTERN": "set",
-            "MIN_ACTION_TIME": 20,
+            "MIN_ACTION_TIME": 1,
             "MEASURE_TIME": 10,
             "IF_GUI": gui,
             "DEBUG": False,
