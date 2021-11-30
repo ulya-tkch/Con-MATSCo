@@ -5,3 +5,4 @@
 *.csv
 /records/*
 /summary/*
+/temp.tensorboard/*
