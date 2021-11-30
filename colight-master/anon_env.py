@@ -938,6 +938,24 @@ class AnonEnv:
 
             reward = self.get_reward()
 
+            # rohin code
+            inter_idx = -1
+            for inter in self.list_intersection:
+                inter_idx+=1
+                phase_time = inter.dic_feature["time_this_phase"][0]
+                state = inter.get_state(self.dic_traffic_env_conf["LIST_STATE_FEATURE"])
+                cur_phase = state["cur_phase"][0]
+                # print()
+                # print("testing")
+                # print(phase_time, curr_phase, action_in_sec[inter_idx])
+
+                # check constraint
+                min_switch_time = 15
+                if cur_phase != -1:
+                    if phase_time <= min_switch_time and cur_phase != action_in_sec[inter_idx]:
+                        # print("applying constraint")
+                        reward[inter_idx] += -10.0
+
             if self.dic_traffic_env_conf['DEBUG']:
                 print("Reward time: {}".format(time.time()-start_time))
 
