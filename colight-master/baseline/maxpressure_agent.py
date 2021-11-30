@@ -65,8 +65,16 @@ class MaxPressureAgent(Agent):
                 self.current_phase_time += 1
             else:
                 self.current_phase_time = 0
+            
+            ### Hard Constraint
+            if state["time_this_phase"][0] <= 15:
+                print("applying constraint")
+                self.action = state["cur_phase"][0] % 4
+            
+            # print(self.action)
+            # print("-------------")
+            
             return self.action
-
 
         if self.dic_traffic_env_conf["ACTION_PATTERN"] == "set":
             self.action = np.argmax([phase_1, phase_2])
@@ -74,6 +82,13 @@ class MaxPressureAgent(Agent):
                 self.current_phase_time += 1
             else:
                 self.current_phase_time = 0
+            
+            ### Hard Constraint 
+            # if state["time_this_phase"][0] <= 15:
+            #     self.action = state["cur_phase"][0]
+            
+            print(self.action)
+            print("-------------")
             return self.action
 
         else:
