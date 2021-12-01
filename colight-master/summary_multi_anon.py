@@ -13,6 +13,8 @@ import matplotlib as mlp
 mlp.use("agg")
 import matplotlib.pyplot as plt
 
+from compute_constraint_metrics import compute_min_switching_metric
+
 #font = {'size': 24}
 #mlp.rc('font', **font)
 
@@ -262,7 +264,10 @@ def summary_detail_test(memo, total_summary):
             list_queue_length_id_seg = [0] * num_seg
             list_duration_id_seg = [0] * num_seg
 
-            sig_switch_time_arr = []
+            # sig_switch_time_arr = []
+
+            round_dir = os.path.join(train_round_dir, round)
+            compute_min_switching_metric(round_dir, num_intersection)
 
             for inter_index in range(num_intersection):
 
@@ -275,22 +280,22 @@ def summary_detail_test(memo, total_summary):
                     samples = pkl.load(f)
                     queue_length_each_inter_each_round = 0
                     
-                    curr_ssta = []
-                    past_phase = 1
-                    time_this_phase = 0
+                    # curr_ssta = []
+                    # past_phase = 1
+                    # time_this_phase = 0
                     
                     for sample in samples:
                         queue_length_each_inter_each_round += sum(sample['state']['lane_num_vehicle_been_stopped_thres1'])
                         # Check for current phase and update the past phase and sig_switch_time_arr
 
-                        curr_phase = sample['state']['cur_phase']
-                        if not(curr_phase == past_phase):
-                            curr_ssta.append(time_this_phase)
-                            past_phase = curr_phase
-                        else:
-                            time_this_phase = sample['state']['time_this_phase'][0]
-
-                    sig_switch_time_arr.append(curr_ssta)
+                    #     curr_phase = sample['state']['cur_phase']
+                    #     if not(curr_phase == past_phase):
+                    #         curr_ssta.append(time_this_phase)
+                    #         past_phase = curr_phase
+                    #     else:
+                    #         time_this_phase = sample['state']['time_this_phase'][0]
+                    #
+                    # sig_switch_time_arr.append(curr_ssta)
                     queue_length_each_inter_each_round = queue_length_each_inter_each_round//len(samples)
                     f.close()
 
@@ -338,35 +343,35 @@ def summary_detail_test(memo, total_summary):
                     # num_of_vehicle_in.append(NAN_LABEL)
                     # num_of_vehicle_out.append(NAN_LABEL)
 
-            if len(sig_switch_time_arr) > 0:
-
-                safe_thresh = 15
-
-                int_weight_score_arr = []
-
-                # Compute the cost
-
-                for idx in range(len(sig_switch_time_arr)):
-                    curr_int = np.array(sig_switch_time_arr[idx])
-
-                    diff_arr = safe_thresh - curr_int
-                    diff_arr[diff_arr < 0] = 0
-
-                    num_pts = np.sum(diff_arr > 0)
-
-                    if num_pts > 0:
-                        mean_squared_violation = np.sum(np.power(diff_arr, 2)) / num_pts
-                    else:
-                        mean_squared_violation = 0
-
-                    int_weight_score_arr.append([num_pts, mean_squared_violation])
-
-                print(sig_switch_time_arr)
-
-                int_weight_score_arr = np.array(int_weight_score_arr)
-                final_cost = np.dot((int_weight_score_arr[:, 0] / np.sum(int_weight_score_arr[:, 0])), int_weight_score_arr[:, 1])
-                print(int_weight_score_arr)
-                print("Final cost (quick switching)", final_cost)
+            # if len(sig_switch_time_arr) > 0:
+            #
+            #     safe_thresh = 15
+            #
+            #     int_weight_score_arr = []
+            #
+            #     # Compute the cost
+            #
+            #     for idx in range(len(sig_switch_time_arr)):
+            #         curr_int = np.array(sig_switch_time_arr[idx])
+            #
+            #         diff_arr = safe_thresh - curr_int
+            #         diff_arr[diff_arr < 0] = 0
+            #
+            #         num_pts = np.sum(diff_arr > 0)
+            #
+            #         if num_pts > 0:
+            #             mean_squared_violation = np.sum(np.power(diff_arr, 2)) / num_pts
+            #         else:
+            #             mean_squared_violation = 0
+            #
+            #         int_weight_score_arr.append([num_pts, mean_squared_violation])
+            #
+            #     print(sig_switch_time_arr)
+            #
+            #     int_weight_score_arr = np.array(int_weight_score_arr)
+            #     final_cost = np.dot((int_weight_score_arr[:, 0] / np.sum(int_weight_score_arr[:, 0])), int_weight_score_arr[:, 1])
+            #     print(int_weight_score_arr)
+            #     print("Final cost (quick switching)", final_cost)
 
 
             if len(df_vehicle_all)==0:
@@ -550,7 +555,7 @@ def summary_detail_baseline(memo):
 
         print(train_dir)
 
-        sig_switch_time_arr = []
+        # sig_switch_time_arr = []
 
         if os.path.getsize(os.path.join(train_dir, "inter_0.pkl")) > 0:
             with open(os.path.join(records_dir, traffic_file, 'agent.conf'), 'r') as agent_conf:
@@ -563,9 +568,11 @@ def summary_detail_baseline(memo):
 
             list_f = ["inter_%d.pkl" % i for i in range(int(NUM_OF_INTERSECTIONS))]
 
+            compute_min_switching_metric(train_dir, NUM_OF_INTERSECTIONS)
+
             for f in list_f:
 
-                curr_ssta = []
+                # curr_ssta = []
                 print("Processing", f)
 
                 pressure_each_inter = 0
@@ -578,37 +585,37 @@ def summary_detail_baseline(memo):
 
                 samples = pkl.load(f)
 
-                print("Num samples", len(samples))
-
-                past_phase = None
-                time_this_phase = 0
-
-                i = 0
-
-                print('Node idx', node_index)
+                # print("Num samples", len(samples))
+                #
+                # past_phase = None
+                # time_this_phase = 0
+                #
+                # i = 0
+                #
+                # print('Node idx', node_index)
 
                 for sample in samples:
-                    if i < 40 and node_index == 0:
-                        print(sample)
-                        i += 1
+                    # if i < 40 and node_index == 0:
+                    #     print(sample)
+                    #     i += 1
                     pressure_each_inter += sum((sample['state']['lane_num_vehicle_been_stopped_thres1']))
 
                     # Check for current phase and update the past phase and sig_switch_time_arr
 
-                    print(sample['state']['time_this_phase'][0], end=',')
-
-                    curr_phase = sample['state']['cur_phase']
-
-                    if past_phase == None:
-                        past_phase = curr_phase
-                    elif not(curr_phase == past_phase):
-                        if past_phase == [-1]:
-                            past_phase = curr_phase
-                            continue
-                        curr_ssta.append(time_this_phase)
-                        past_phase = curr_phase
-                    else:
-                        time_this_phase = sample['state']['time_this_phase'][0]
+                    # print(sample['state']['time_this_phase'][0], end=',')
+                    #
+                    # curr_phase = sample['state']['cur_phase']
+                    #
+                    # if past_phase == None:
+                    #     past_phase = curr_phase
+                    # elif not(curr_phase == past_phase):
+                    #     if past_phase == [-1]:
+                    #         past_phase = curr_phase
+                    #         continue
+                    #     curr_ssta.append(time_this_phase)
+                    #     past_phase = curr_phase
+                    # else:
+                    #     time_this_phase = sample['state']['time_this_phase'][0]
 
 
                 f.close()
@@ -636,7 +643,7 @@ def summary_detail_baseline(memo):
                 df_vehicle.append(df_vehicle_inter_0)
                 print(df_vehicle_inter_0.groupby(['flow_id'])['duration'].mean()) # mean for every intersection
 
-                sig_switch_time_arr.append(curr_ssta)
+                # sig_switch_time_arr.append(curr_ssta)
 
             df_vehicle = pd.concat(df_vehicle,axis=0)
 
@@ -662,34 +669,34 @@ def summary_detail_baseline(memo):
         else:
             shutil.rmtree(train_dir)
 
-    safe_thresh = 15
-
-    int_weight_score_arr = []
-
-    # Compute the cost
-
-    for idx in range(len(sig_switch_time_arr)):
-        curr_int = np.array(sig_switch_time_arr[idx])
-        num_pts = len(curr_int)
-
-        print(idx, curr_int)
-
-        diff_arr = safe_thresh - curr_int
-        diff_arr[diff_arr < 0] = 0
-
-        num_pts = np.sum(diff_arr > 0)
-
-        if num_pts > 0:
-            mean_squared_violation = np.sum(np.power(diff_arr, 2)) / num_pts
-        else:
-            mean_squared_violation = 0
-
-        int_weight_score_arr.append([num_pts, mean_squared_violation])
-
-    int_weight_score_arr = np.array(int_weight_score_arr)
-    final_cost = np.dot((int_weight_score_arr[:, 0] / np.sum(int_weight_score_arr[:, 0])), int_weight_score_arr[:, 1])
-    print(int_weight_score_arr)
-    print("Final cost (quick switching)", final_cost)
+    # safe_thresh = 15
+    #
+    # int_weight_score_arr = []
+    #
+    # # Compute the cost
+    #
+    # for idx in range(len(sig_switch_time_arr)):
+    #     curr_int = np.array(sig_switch_time_arr[idx])
+    #     num_pts = len(curr_int)
+    #
+    #     print(idx, curr_int)
+    #
+    #     diff_arr = safe_thresh - curr_int
+    #     diff_arr[diff_arr < 0] = 0
+    #
+    #     num_pts = np.sum(diff_arr > 0)
+    #
+    #     if num_pts > 0:
+    #         mean_squared_violation = np.sum(np.power(diff_arr, 2)) / num_pts
+    #     else:
+    #         mean_squared_violation = 0
+    #
+    #     int_weight_score_arr.append([num_pts, mean_squared_violation])
+    #
+    # int_weight_score_arr = np.array(int_weight_score_arr)
+    # final_cost = np.dot((int_weight_score_arr[:, 0] / np.sum(int_weight_score_arr[:, 0])), int_weight_score_arr[:, 1])
+    # print(int_weight_score_arr)
+    # print("Final cost (quick switching)", final_cost)
 
 
     total_summary = pd.DataFrame(total_summary)

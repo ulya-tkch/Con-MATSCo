@@ -278,6 +278,8 @@ class Pipeline:
 
         best_round, bar_round = None, None
 
+        print("Printing for pipeline the min action time", self.dic_traffic_env_conf)
+
         f_time = open(os.path.join(self.dic_path["PATH_TO_WORK_DIRECTORY"],"running_time.csv"),"w")
         f_time.write("generator_time\tmaking_samples_time\tupdate_network_time\ttest_evaluation_times\tall_times\n")
         f_time.close()

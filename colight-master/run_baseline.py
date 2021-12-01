@@ -133,7 +133,7 @@ def main_base(memo, rall, road_net, env, gui, volume, ratio, model,count,lane):
             "MODEL_NAME":model_name,
 
 
-            "SAVEREPLAY": False,
+            "SAVEREPLAY": True,
             "NUM_ROW": NUM_ROW,
             "NUM_COL": NUM_COL,
 
