@@ -36,7 +36,7 @@ def compute_min_switching_metric(base_dir, num_inter):
 
     t_start = datetime.now()
 
-    print("Initiating min switching violation metric computation")
+    print("Initiating min switching violation metric computation for", base_dir)
 
     int_sig_switch_dict = {}
 
@@ -88,6 +88,11 @@ def compute_min_switching_metric(base_dir, num_inter):
 
     for inter_idx in range(num_inter):
 
+        # TODO : Add back intersection 0 in the computation once the issue with pickle is figured out
+
+        if inter_idx == 0:
+            continue
+
         # Identify violating switches
 
         sig_switch_arr = int_sig_switch_dict.get(inter_idx)
@@ -98,7 +103,7 @@ def compute_min_switching_metric(base_dir, num_inter):
 
         violating_switch_bool = np.logical_and(violating_switch_bool, np.logical_not(exempt_switch_bool))
 
-        violation_comp_arr[inter_idx, 2] = num_switches
+        violation_comp_arr[inter_idx, 2] = num_switches - np.sum(exempt_switch_bool)
         num_violations = np.sum(violating_switch_bool)
 
         # If there are violations add to the cost
@@ -121,7 +126,8 @@ def compute_min_switching_metric(base_dir, num_inter):
         min_switch_cost_2 = (constraint_const_dict.get('min_green_time') ** 2) * total_num_violations / \
             np.sum(violation_comp_arr[:, 2])
 
-        min_switch_cost = min_switch_cost_1 + min_switch_cost_2
+        min_switch_cost = (min_switch_cost_1 + min_switch_cost_2) / \
+                          (2 * (constraint_const_dict.get('min_green_time') ** 2))
 
     print("Min switching violation metric computation completed in time", datetime.now() - t_start)
     print("Min switching violation cost is", np.round(min_switch_cost, 3))
@@ -131,6 +137,10 @@ if __name__ == '__main__':
 
     # Code for testing
 
-    compute_min_switching_metric('records/1130_20_Fixedtime_6_6_bi_test_rewardshaping/' +
-                                 'anon_6_6_300_0.3_bi.json_11_30_02_45_19_30/', 36)
+    # compute_min_switching_metric('records/1130_20_Fixedtime_6_6_bi_test_rewardshaping/' +
+    #                              'anon_6_6_300_0.3_bi.json_11_30_02_45_19_30/', 36)
+
+    compute_min_switching_metric('records/1130_22_CoLight_6_6_bi_test_rewardshaping/' +
+                                 'anon_6_6_300_0.3_bi.json_11_30_02_01_18/test_round/round_1', 36)
+
 
