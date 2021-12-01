@@ -15,7 +15,7 @@ multi_process = True
 TOP_K_ADJACENCY=-1
 TOP_K_ADJACENCY_LANE=-1
 PRETRAIN=False
-NUM_ROUNDS=100
+NUM_ROUNDS=2
 EARLY_STOP=False 
 NEIGHBOR=False
 SAVEREPLAY=False
@@ -26,7 +26,7 @@ ANON_PHASE_REPRE=[]
 def parse_args_exp():
     parser = argparse.ArgumentParser()
     # The file folder to create/log in
-    parser.add_argument("--memo", type=str, default='0515_afternoon_Colight_6_6_bi')#1_3,2_2,3_3,4_4
+    parser.add_argument("--memo", type=str, default='1130_afternoon_Colight_6_6_bi')#1_3,2_2,3_3,4_4
     parser.add_argument("--env", type=int, default=1) #env=1 means you will run CityFlow
     parser.add_argument("--gui", type=bool, default=False)
     parser.add_argument("--road_net", type=str, default='6_6')#'1_2') # which road net you are going to run
@@ -40,7 +40,7 @@ def parse_args_exp():
     global TOP_K_ADJACENCY_LANE
     TOP_K_ADJACENCY_LANE=5
     global NUM_ROUNDS
-    NUM_ROUNDS=100
+    NUM_ROUNDS=2
     global EARLY_STOP
     EARLY_STOP=False
     global NEIGHBOR
@@ -69,7 +69,6 @@ def parse_args_exp():
     if 'CoLight_Signal' in tt.mod:
         #12dim
         ANON_PHASE_REPRE={
-            # 0: [0, 0, 0, 0, 0, 0, 0, 0],
             1: [0, 1, 1, 0, 1, 1, 0, 0, 1, 0, 0, 1],# 'WSES',
             2: [0, 0, 1, 0, 0, 1, 0, 1, 1, 0, 1, 1],# 'NSSS',
             3: [1, 0, 1, 1, 0, 1, 0, 0, 1, 0, 0, 1],# 'WLEL',
@@ -211,7 +210,7 @@ def main_exp(memo, env, road_net, gui, volume, suffix, mod, cnt, gen, r_all, wor
             "NUM_AGENTS": num_intersections,
             "NUM_INTERSECTIONS": num_intersections,
             "ACTION_PATTERN": "set",
-            "MEASURE_TIME": 10,
+            "MEASURE_TIME": 1,
             "IF_GUI": gui,
             "DEBUG": False,
             "TOP_K_ADJACENCY": TOP_K_ADJACENCY,

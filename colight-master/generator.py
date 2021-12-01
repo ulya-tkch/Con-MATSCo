@@ -106,16 +106,21 @@ class Generator:
                             action = self.agents[i].choose_action(step_num, one_state)
                         else:
                             action = self.agents[i].choose_action_separate(step_num, one_state)
+                    # print(i, action_list)
                     action_list = action
                 else:
                     one_state = state[i]
                     action = self.agents[i].choose_action(step_num, one_state)
                     action_list.append(action)
 
+            # print("Step Num", step_num, action_list)
             next_state, reward, done, _ = self.env.step(action_list)
 
-            print("time: {0}, running_time: {1}".format(self.env.get_current_time()-self.dic_traffic_env_conf["MIN_ACTION_TIME"],
-                                                        time.time()-step_start_time))
+            if step_num % 1000 == 0:
+
+                print("time: {0}, running_time: {1}".format(self.env.get_current_time()-
+                                                            self.dic_traffic_env_conf["MIN_ACTION_TIME"],
+                                                            time.time()-running_start_time))
             state = next_state
             step_num += 1
         running_time = time.time() - running_start_time

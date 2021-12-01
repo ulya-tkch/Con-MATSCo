@@ -17,8 +17,10 @@ from keras import backend as K
 import random
 from keras.engine.topology import Layer
 import os
-
+import sys
+sys.path.append('../')
 from agent import Agent
+
 
 class Selector(Layer):
 

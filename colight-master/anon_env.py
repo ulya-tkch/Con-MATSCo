@@ -740,6 +740,7 @@ class Intersection:
         # customize your own state
         # print(list_state_features)
         # print(self.dic_feature)
+        list_state_features = list_state_features + ['time_this_phase']
         dic_state = {state_feature_name: self.dic_feature[state_feature_name] for state_feature_name in list_state_features}
 
         return dic_state
@@ -922,12 +923,12 @@ class AnonEnv:
             before_action_feature = self.get_feature()
             # state = self.get_state()
 
-            if self.dic_traffic_env_conf['DEBUG']:
-                print("time: {0}".format(instant_time))
-                print(action_in_sec)
-            else:
-                if i == 0:
-                    print("time: {0}".format(instant_time))
+            # if self.dic_traffic_env_conf['DEBUG']:
+            #     print("time: {0}".format(instant_time))
+            #     print(action_in_sec)
+            # else:
+            #     if i == 0:
+            #         print("time: {0}".format(instant_time))
 
             self._inner_step(action_in_sec)
 
@@ -959,7 +960,6 @@ class AnonEnv:
             if self.dic_traffic_env_conf['DEBUG']:
                 print("Reward time: {}".format(time.time()-start_time))
 
-
             for j in range(len(reward)):
                 average_reward_action_list[j] = (average_reward_action_list[j] * i + reward[j]) / (i + 1)
 
@@ -970,7 +970,7 @@ class AnonEnv:
 
             next_state, done = self.get_state()
 
-        print("Step time: ", time.time() - step_start_time)
+        # print("Step time: ", time.time() - step_start_time)
         return next_state, reward, done, average_reward_action_list
 
     def _inner_step(self, action):

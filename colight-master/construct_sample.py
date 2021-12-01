@@ -90,7 +90,10 @@ class ConstructSample:
             for key, value in state["state"].items():
                 if key in features:
                     if "cur_phase" in key:
-                        state_after_selection[key] = self.dic_traffic_env_conf['PHASE'][self.dic_traffic_env_conf['SIMULATOR_TYPE']][value[0]]
+                        if value[0] == -1:
+                            state_after_selection[key] = [0, 0, 0, 0, 0, 0, 0, 0]
+                        else:
+                            state_after_selection[key] = self.dic_traffic_env_conf['PHASE'][self.dic_traffic_env_conf['SIMULATOR_TYPE']][value[0]]
                     else:
                         state_after_selection[key] = value
         else:
