@@ -241,7 +241,7 @@ class Pipeline:
             except Exception as e:
                 # print("CANNOT READ %s"%path_to_pkl)
                 print("----------------------------")
-                print("Error occurs when READING pickles when down sampling for inter {0}, {1}".format(i, f_logging_data))
+                # print("Error occurs when READING pickles when down sampling for inter {0}, {1}".format(i, f_logging_data))
                 print('traceback.format_exc():\n%s' % traceback.format_exc())
                 print("----------------------------")
 
@@ -277,6 +277,8 @@ class Pipeline:
     def run(self, multi_process=False):
 
         best_round, bar_round = None, None
+
+        print("Printing for pipeline the min action time", self.dic_traffic_env_conf)
 
         f_time = open(os.path.join(self.dic_path["PATH_TO_WORK_DIRECTORY"],"running_time.csv"),"w")
         f_time.write("generator_time\tmaking_samples_time\tupdate_network_time\ttest_evaluation_times\tall_times\n")
@@ -455,17 +457,17 @@ class Pipeline:
                                          best_round=best_round,
                                          bar_round=bar_round)
 
-            if not self.dic_exp_conf["DEBUG"]:
-                for cnt_gen in range(self.dic_exp_conf["NUM_GENERATORS"]):
-                    path_to_log = os.path.join(self.dic_path["PATH_TO_WORK_DIRECTORY"], "train_round",
-                                               "round_" + str(cnt_round), "generator_" + str(cnt_gen))
-                    try:
-                        self.downsample_for_system(path_to_log,self.dic_traffic_env_conf)
-                    except Exception as e:
-                        print("----------------------------")
-                        print("Error occurs when downsampling for round {0} generator {1}".format(cnt_round, cnt_gen))
-                        print("traceback.format_exc():\n%s"%traceback.format_exc())
-                        print("----------------------------")
+            # if not self.dic_exp_conf["DEBUG"]:
+            #     for cnt_gen in range(self.dic_exp_conf["NUM_GENERATORS"]):
+            #         path_to_log = os.path.join(self.dic_path["PATH_TO_WORK_DIRECTORY"], "train_round",
+            #                                    "round_" + str(cnt_round), "generator_" + str(cnt_gen))
+            #         try:
+            #             self.downsample_for_system(path_to_log,self.dic_traffic_env_conf)
+            #         except Exception as e:
+            #             print("----------------------------")
+            #             print("Error occurs when downsampling for round {0} generator {1}".format(cnt_round, cnt_gen))
+            #             print("traceback.format_exc():\n%s"%traceback.format_exc())
+            #             print("----------------------------")
             update_network_end_time = time.time()
             update_network_total_time = update_network_end_time - update_network_start_time
 

@@ -274,10 +274,14 @@ class CoLightAgent(Agent):
                         if 'adjacency' in feature_name:
                             continue
                         if feature_name == "cur_phase":
-                            if len(state[i][j][feature_name])==1:
-                                #choose_action
-                                observation.extend(self.dic_traffic_env_conf['PHASE'][self.dic_traffic_env_conf['SIMULATOR_TYPE']]
-                                                            [state[i][j][feature_name][0]])
+                            if len(state[i][j][feature_name]) == 1:
+                                if state[i][j][feature_name][0] == -1:
+                                    observation.extend([0, 0, 0, 0, 0, 0, 0, 0])
+                                else:
+                                    #choose_action
+                                    observation.extend(self.dic_traffic_env_conf['PHASE']
+                                                       [self.dic_traffic_env_conf['SIMULATOR_TYPE']]
+                                                       [state[i][j][feature_name][0]])
                             else:
                                 observation.extend(state[i][j][feature_name])
                         elif feature_name=="lane_num_vehicle":
@@ -322,6 +326,28 @@ class CoLightAgent(Agent):
         -output: out: [batch,agent,action], att:[batch,layers,agent,head,neighbors]
         '''
         act,attention=self.action_att_predict([state])
+
+        safety_thresh = 15
+
+        # Hard code constraint to continue current state if time below safe limit
+
+        curr_state = []
+        time_phase = []
+
+        for st in state:
+            curr_state.append(st['cur_phase'][0])
+            time_phase.append(st['time_this_phase'][0])
+
+        curr_state = np.array(curr_state)
+        time_phase = np.array(time_phase)
+
+        block_act_bool = np.logical_and(np.logical_not(act[0] + 1 == curr_state), time_phase < safety_thresh)
+        exempt_bool = curr_state == -1
+
+        block_act_bool = np.logical_and(np.logical_not(exempt_bool), block_act_bool)
+
+        act[0][block_act_bool] = curr_state[block_act_bool] - 1
+
         return act[0],attention[0] 
 
 
