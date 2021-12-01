@@ -937,6 +937,7 @@ class AnonEnv:
                 start_time = time.time()
 
             reward = self.get_reward()
+            cost = reward
 
             # rohin code
             inter_idx = -1
@@ -954,7 +955,7 @@ class AnonEnv:
                 if cur_phase != -1:
                     if phase_time <= min_switch_time and cur_phase != action_in_sec[inter_idx]:
                         # print("applying constraint")
-                        reward[inter_idx] += -10.0
+                        cost[inter_idx] = 10.0
 
             if self.dic_traffic_env_conf['DEBUG']:
                 print("Reward time: {}".format(time.time()-start_time))
@@ -971,7 +972,7 @@ class AnonEnv:
             next_state, done = self.get_state()
 
         print("Step time: ", time.time() - step_start_time)
-        return next_state, reward, done, average_reward_action_list
+        return next_state, reward, cost, done, average_reward_action_list
 
     def _inner_step(self, action):
 

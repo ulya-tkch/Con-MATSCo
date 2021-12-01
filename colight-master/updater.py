@@ -47,7 +47,7 @@ class Updater:
                     self.dic_path, self.cnt_round, intersection_id=str(i))
             self.agents.append(agent)
 
-    def load_sample(self, i):
+    def load_sample(self, i):   ### this right here
         sample_set = []
         try:
             if self.dic_exp_conf["PRETRAIN"]:

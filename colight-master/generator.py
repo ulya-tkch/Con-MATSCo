@@ -112,7 +112,7 @@ class Generator:
                     action = self.agents[i].choose_action(step_num, one_state)
                     action_list.append(action)
 
-            next_state, reward, done, _ = self.env.step(action_list)
+            next_state, reward, cost, done, _ = self.env.step(action_list)
 
             print("time: {0}, running_time: {1}".format(self.env.get_current_time()-self.dic_traffic_env_conf["MIN_ACTION_TIME"],
                                                         time.time()-step_start_time))
