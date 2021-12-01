@@ -17,10 +17,10 @@ if __name__ == '__main__':
 
     # Populate the params used to uniquely store the results, logs etc.
 
-    date = '30'  # Expected to be a length 2 string which is the date of run
-    month = '11'  # Expected to be a length 2 string which is the month of run
-    hour = '18'  # Expected to be a length 2 string which is the hour of run
-    ident = 'test'  # Expected to be a string of your choosing that can ensure uniqueness
+    date = '01'  # Expected to be a length 2 string which is the date of run
+    month = '12'  # Expected to be a length 2 string which is the month of run
+    hour = '13'  # Expected to be a length 2 string which is the hour of run
+    ident = 'test_rewardshaping_2'  # Expected to be a string of your choosing that can ensure uniqueness
 
     # Initialize control variables related to model training
 

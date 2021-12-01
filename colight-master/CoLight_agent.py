@@ -331,22 +331,22 @@ class CoLightAgent(Agent):
 
         # Hard code constraint to continue current state if time below safe limit
 
-        curr_state = []
-        time_phase = []
+        # curr_state = []
+        # time_phase = []
 
-        for st in state:
-            curr_state.append(st['cur_phase'][0])
-            time_phase.append(st['time_this_phase'][0])
+        # for st in state:
+        #     curr_state.append(st['cur_phase'][0])
+        #     time_phase.append(st['time_this_phase'][0])
 
-        curr_state = np.array(curr_state)
-        time_phase = np.array(time_phase)
+        # curr_state = np.array(curr_state)
+        # time_phase = np.array(time_phase)
 
-        block_act_bool = np.logical_and(np.logical_not(act[0] + 1 == curr_state), time_phase < safety_thresh)
-        exempt_bool = curr_state == -1
+        # block_act_bool = np.logical_and(np.logical_not(act[0] + 1 == curr_state), time_phase < safety_thresh)
+        # exempt_bool = curr_state == -1
 
-        block_act_bool = np.logical_and(np.logical_not(exempt_bool), block_act_bool)
+        # block_act_bool = np.logical_and(np.logical_not(exempt_bool), block_act_bool)
 
-        act[0][block_act_bool] = curr_state[block_act_bool] - 1
+        # act[0][block_act_bool] = curr_state[block_act_bool] - 1
 
         return act[0],attention[0] 
 
