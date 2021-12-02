@@ -27,7 +27,7 @@ if __name__ == '__main__':
     # 'CoLight' (run using runexp.py)
     # 'Fixedtime', 'MaxPressure' (run using run_baseline.py)
 
-    model_name = 'CoLight'
+    model_name = 'MaxPressure'
 
     # These are also dimensions of the intersections grid
     # Synthetic Data : '3_3', '6_6', '10_10'

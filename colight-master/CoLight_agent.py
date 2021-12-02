@@ -375,18 +375,21 @@ class CoLightAgent(Agent):
         _next_state = []
         _action=[]
         _reward=[]
+        _cost=[]
 
         for i in range(len(sample_slice)):  
             _state.append([])
             _next_state.append([])
             _action.append([])
             _reward.append([])
+            _cost.append([])
             for j in range(self.num_agents):
-                state, action, next_state, reward, _ = sample_slice[i][j]
+                state, action, next_state, reward, cost, _ = sample_slice[i][j]
                 _state[i].append(state)
                 _next_state[i].append(next_state)
                 _action[i].append(action)
                 _reward[i].append(reward)
+                _cost[i].append(cost)
 
 
         #target: [#agents,#samples,#num_actions]    

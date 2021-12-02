@@ -130,7 +130,21 @@ class ConstructSample:
         return reward
 
 
+    def cal_cost(self, rs_og):
+        c = 0
 
+        cur_phase = rs_og["state"]["cur_phase"][0]
+        time_this_phase = rs_og["state"]["time_this_phase"][0]
+        action = rs_og["action"]
+
+        MIN_SWITCH_TIME = 15
+        if cur_phase != -1:
+            if cur_phase == action:
+                if time_this_phase <= MIN_SWITCH_TIME:
+                    c += 1.5
+        
+        return c
+    
     def cal_reward(self, rs, rs_og, rewards_components):
         r = 0
         for component, weight in rewards_components.items():
@@ -142,17 +156,6 @@ class ConstructSample:
                 continue
             r += rs[component] * weight
         
-        # print(rs)
-        cur_phase = rs_og["state"]["cur_phase"][0]
-        time_this_phase = rs_og["state"]["time_this_phase"][0]
-        action = rs_og["action"]
-
-        MIN_SWITCH_TIME = 15
-        if cur_phase != -1:
-            if cur_phase == action:
-                if time_this_phase <= MIN_SWITCH_TIME:
-                    r += -1.5
-        
         return r
 
 
@@ -161,20 +164,29 @@ class ConstructSample:
         rs = self.logging_data_list_per_gen[i][time + self.measure_time - 1]
         assert time + self.measure_time - 1 == rs["time"]
         rs_new = self.get_reward_from_features(rs['state'])
-        r_instant = self.cal_reward(rs_new, rs, rewards_components)
+        r_instant = self.cal_reward(rs_new, rewards_components)
+
+        cost_instant = self.cal_cost(rs)
+
 
         # average
         list_r = []
+        list_c = []
         for t in range(time, time + self.measure_time):
             #print("t is ", t)
             rs = self.logging_data_list_per_gen[i][t]
             assert t == rs["time"]
             rs_new = self.get_reward_from_features(rs['state'])
-            r = self.cal_reward(rs_new, rs, rewards_components)
+            r = self.cal_reward(rs_new, rewards_components)
+            c = self.cal_cost(rs)
+            
             list_r.append(r)
-        r_average = np.average(list_r)
+            list_c.append(c)
 
-        return r_instant, r_average
+        r_average = np.average(list_r)
+        c_average = np.average(list_c)
+
+        return r_instant, r_average, cost_instant, c_average
 
     def judge_action(self,time,i):
         if self.logging_data_list_per_gen[i][time]['action'] == -1:
@@ -204,7 +216,7 @@ class ConstructSample:
             time_count = 0
             for time in range(0, total_time - self.measure_time + 1, self.interval):
                 state = self.construct_state(self.dic_traffic_env_conf["LIST_STATE_FEATURE"], time, i)
-                reward_instant, reward_average = self.construct_reward(self.dic_traffic_env_conf["DIC_REWARD_INFO"],
+                reward_instant, reward_average, cost_instant, cost_average = self.construct_reward(self.dic_traffic_env_conf["DIC_REWARD_INFO"],
                                                                        time, i)
                 action = self.judge_action(time, i)
 
@@ -215,7 +227,7 @@ class ConstructSample:
                 else:
                     next_state = self.construct_state(self.dic_traffic_env_conf["LIST_STATE_FEATURE"],
                                                       time + self.interval, i)
-                sample = [state, action, next_state, reward_average, reward_instant, time,
+                sample = [state, action, next_state, reward_average, cost_average, reward_instant, cost_instant, time,
                           folder+"-"+"round_{0}".format(self.cnt_round)]
                 list_samples.append(sample)
 
