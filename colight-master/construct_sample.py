@@ -164,7 +164,7 @@ class ConstructSample:
         rs = self.logging_data_list_per_gen[i][time + self.measure_time - 1]
         assert time + self.measure_time - 1 == rs["time"]
         rs_new = self.get_reward_from_features(rs['state'])
-        r_instant = self.cal_reward(rs_new, rewards_components)
+        r_instant = self.cal_reward(rs_new, rs, rewards_components)
 
         cost_instant = self.cal_cost(rs)
 
@@ -177,7 +177,7 @@ class ConstructSample:
             rs = self.logging_data_list_per_gen[i][t]
             assert t == rs["time"]
             rs_new = self.get_reward_from_features(rs['state'])
-            r = self.cal_reward(rs_new, rewards_components)
+            r = self.cal_reward(rs_new, rs, rewards_components)
             c = self.cal_cost(rs)
             
             list_r.append(r)

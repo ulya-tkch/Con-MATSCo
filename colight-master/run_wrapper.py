@@ -20,14 +20,14 @@ if __name__ == '__main__':
     date = '01'  # Expected to be a length 2 string which is the date of run
     month = '12'  # Expected to be a length 2 string which is the month of run
     hour = '13'  # Expected to be a length 2 string which is the hour of run
-    ident = 'test_rewardshaping_2'  # Expected to be a string of your choosing that can ensure uniqueness
+    ident = 'test_cpo'  # Expected to be a string of your choosing that can ensure uniqueness
 
     # Initialize control variables related to model training
 
     # 'CoLight' (run using runexp.py)
     # 'Fixedtime', 'MaxPressure' (run using run_baseline.py)
 
-    model_name = 'MaxPressure'
+    model_name = 'CoLight'
 
     # These are also dimensions of the intersections grid
     # Synthetic Data : '3_3', '6_6', '10_10'

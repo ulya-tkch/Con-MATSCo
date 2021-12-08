@@ -20,6 +20,11 @@ from keras.utils import np_utils,to_categorical
 from keras.engine.topology import Layer
 from keras.callbacks import EarlyStopping, TensorBoard
 
+## PyTorch - CPO
+import torch
+import torch.nn as nn
+from models import build_diag_gauss_policy, build_mlp
+from memory import Memory, Trajectory
 # SEED=6666
 # random.seed(SEED)
 # np.random.seed(SEED)
@@ -299,9 +304,12 @@ class CoLightAgent(Agent):
         else:
             all_output= self.q_network.predict([total_features,total_adjs])
         action,attention =all_output[0],all_output[1]
+        # print("action after model output:", np.array(action).shape)
+
 
         #out: [batch,agent,action], att:[batch,layers,agent,head,neighbors]
         if len(action)>1:
+            # print("len action > 1?")
             return total_features,total_adjs,action,attention
 
         #[batch,agent,1]
@@ -315,7 +323,53 @@ class CoLightAgent(Agent):
             p=[1-self.dic_agent_conf["EPSILON"],self.dic_agent_conf["EPSILON"]])
         act=possible_action.reshape((batch_size*self.num_agents,2))[np.arange(batch_size*self.num_agents),selection]
         act=np.reshape(act,(batch_size,self.num_agents))
+        # print("action being returned:", act)
+        # print(self.num_actions)
         return act,attention
+
+    # CPO tensor requirement
+    def tensor_from_state(self, state,total_features=[],total_adjs=[]):
+        #state:[batch,agent,features and adj]
+        #return: total_features that are actually model input tensor
+        batch_size=len(state)
+        if total_features==[] and total_adjs==[]:
+            total_features,total_adjs=list(),list()
+            for i in range(batch_size): 
+                feature=[]
+                adj=[] 
+                for j in range(self.num_agents):
+                    observation=[]
+                    for feature_name in self.dic_traffic_env_conf["LIST_STATE_FEATURE"]:
+                        if 'adjacency' in feature_name:
+                            continue
+                        if feature_name == "cur_phase":
+                            if len(state[i][j][feature_name]) == 1:
+                                if state[i][j][feature_name][0] == -1:
+                                    observation.extend([0, 0, 0, 0, 0, 0, 0, 0])
+                                else:
+                                    #choose_action
+                                    observation.extend(self.dic_traffic_env_conf['PHASE']
+                                                       [self.dic_traffic_env_conf['SIMULATOR_TYPE']]
+                                                       [state[i][j][feature_name][0]])
+                            else:
+                                observation.extend(state[i][j][feature_name])
+                        elif feature_name=="lane_num_vehicle":
+                            observation.extend(state[i][j][feature_name])
+                    feature.append(observation)
+                    adj.append(state[i][j]['adjacency_matrix'])
+                total_features.append(feature)
+                total_adjs.append(adj)
+            #feature:[agents,feature]
+            total_features=np.reshape(np.array(total_features),[batch_size,self.num_agents,-1])
+            total_adjs=self.adjacency_index2matrix(np.array(total_adjs))
+
+        total_features = np.reshape(total_features, [batch_size, -1])
+        trajectories_obs = []
+        for i in range(batch_size):
+            obs = torch.tensor(total_features[i]).float()
+            trajectories_obs.append(obs)
+
+        return trajectories_obs
 
 
     def choose_action(self, count, state):
@@ -384,12 +438,16 @@ class CoLightAgent(Agent):
             _reward.append([])
             _cost.append([])
             for j in range(self.num_agents):
-                state, action, next_state, reward, cost, _ = sample_slice[i][j]
+                state, action, next_state, reward, cost, _, _ = sample_slice[i][j]
+                # state, action, next_state, reward, _ = sample_slice[i][j]
                 _state[i].append(state)
                 _next_state[i].append(next_state)
                 _action[i].append(action)
                 _reward[i].append(reward)
                 _cost[i].append(cost)
+            
+        trajectories_obs = self.tensor_from_state(_state)
+        print(trajectories_obs[0].size(), len(_action[0]), len(_cost[0]))
 
 
         #target: [#agents,#samples,#num_actions]    

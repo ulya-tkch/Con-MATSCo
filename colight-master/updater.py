@@ -212,9 +212,11 @@ class Updater:
                     sample_set = self.load_sample(i)
                     if len(sample_set) == 0:
                         continue
-                    samples_set_df = pd.DataFrame.from_records(sample_set,columns= ['state','action','next_state','inst_reward','reward','time','generator'])
-                    samples_set_df['input'] = samples_set_df[['state','action','next_state','inst_reward','reward']].values.tolist()
-                    samples_set_df.drop(['state','action','next_state','inst_reward','reward'], axis=1, inplace=True)
+                    ## dropping cost here
+                    ## order of instant and average reversed??
+                    samples_set_df = pd.DataFrame.from_records(sample_set,columns= ['state','action','next_state','inst_reward', 'inst_cost','reward', 'cost','time','generator'])
+                    samples_set_df['input'] = samples_set_df[['state','action','next_state','inst_reward', 'inst_cost','reward', 'cost']].values.tolist()
+                    samples_set_df.drop(['state','action','next_state','inst_reward', 'inst_cost','reward', 'cost'], axis=1, inplace=True)
                     # samples_set_df['inter_id'] = i
                     if samples_gcn_df is None:
                         samples_gcn_df = samples_set_df
@@ -232,9 +234,9 @@ class Updater:
                 get_samples_start_time = time.time()
                 for i in range(self.dic_traffic_env_conf['NUM_INTERSECTIONS']):
                     sample_set = self.load_sample(i)
-                    samples_set_df = pd.DataFrame.from_records(sample_set,columns= ['state','action','next_state','inst_reward','reward','time','generator'])
-                    samples_set_df['input'] = samples_set_df[['state','action','next_state','inst_reward','reward']].values.tolist()
-                    samples_set_df.drop(['state','action','next_state','inst_reward','reward','time','generator'], axis=1, inplace=True)
+                    samples_set_df = pd.DataFrame.from_records(sample_set,columns= ['state','action','next_state','inst_reward', 'inst_cost','reward', 'cost','time','generator'])
+                    samples_set_df['input'] = samples_set_df[['state','action','next_state','inst_reward', 'inst_cost','reward', 'cost']].values.tolist()
+                    samples_set_df.drop(['state','action','next_state','inst_reward', 'inst_cost','reward', 'cost','time','generator'], axis=1, inplace=True)
                     # samples_set_df['inter_id'] = i
                     samples_gcn_df.append(samples_set_df['input'])
                     if i%100 == 0:
@@ -252,9 +254,9 @@ class Updater:
                 get_samples_start_time = time.time()
                 for i in range(self.dic_traffic_env_conf['NUM_INTERSECTIONS']):
                     sample_set = self.load_sample(i)
-                    samples_set_df = pd.DataFrame.from_records(sample_set,columns= ['state','action','next_state','inst_reward','reward','time','generator'])
-                    samples_set_df['input'] = samples_set_df[['state','action','next_state','inst_reward','reward']].values.tolist()
-                    samples_set_df.drop(['state','action','next_state','inst_reward','reward','time','generator'], axis=1, inplace=True)
+                    samples_set_df = pd.DataFrame.from_records(sample_set,columns= ['state','action','next_state','inst_reward', 'inst_cost','reward', 'cost','time','generator'])
+                    samples_set_df['input'] = samples_set_df[['state','action','next_state','inst_reward', 'inst_cost','reward', 'cost']].values.tolist()
+                    samples_set_df.drop(['state','action','next_state','inst_reward', 'inst_cost','reward', 'cost','time','generator'], axis=1, inplace=True)
                     # samples_set_df['inter_id'] = i
                     samples_gcn_df.append(samples_set_df['input'])
                     if i%100 == 0:
@@ -271,15 +273,21 @@ class Updater:
 
     def sample_set_to_sample_gcn_df(self,sample_set):
         print("make results")
-        samples_set_df = pd.DataFrame.from_records(sample_set,columns= ['state','action','next_state','inst_reward','reward','time','generator'])
+        samples_set_df = pd.DataFrame.from_records(sample_set,columns= ['state','action','next_state','inst_reward', 'inst_cost','reward', 'cost','time','generator'])
         samples_set_df = samples_set_df.set_index(['time','generator'])
-        samples_set_df['input'] = samples_set_df[['state','action','next_state','inst_reward','reward']].values.tolist()
-        samples_set_df.drop(['state','action','next_state','inst_reward','reward'], axis=1, inplace=True)
+        samples_set_df['input'] = samples_set_df[['state','action','next_state','inst_reward', 'inst_cost','reward', 'cost']].values.tolist()
+        samples_set_df.drop(['state','action','next_state','inst_reward', 'inst_cost','reward', 'cost'], axis=1, inplace=True)
         self.sample_set_list.append(samples_set_df)
 
 
     def update_network(self,i):
         print('update agent %d'%i)
+        
+        ## idk if it'll work or not
+        # self.cpo.train(self.memoryCPO)
+        # print("CPO training Done")
+        # print("---------------")
+
         self.agents[i].train_network(self.dic_exp_conf)
         if self.dic_traffic_env_conf["ONE_MODEL"]:
             if self.dic_exp_conf["PRETRAIN"]:
