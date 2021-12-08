@@ -80,57 +80,60 @@ class CoLightAgent(Agent):
         self.len_feature=self.compute_len_feature()
         self.memory = self.build_memory()
 
-        if cnt_round == 0: 
-            # initialization
-            self.q_network = self.build_network()
-            if os.listdir(self.dic_path["PATH_TO_MODEL"]):
-                self.q_network.load_weights(
-                    os.path.join(self.dic_path["PATH_TO_MODEL"], "round_0_inter_{0}.h5".format(intersection_id)), 
-                    by_name=True)
-            self.q_network_bar = self.build_network_from_copy(self.q_network)
-        else:
-            try:
-                if best_round:
-                    # use model pool
-                    self.load_network("round_{0}_inter_{1}".format(best_round,self.intersection_id))
+        self.policy = build_diag_gauss_policy(state_dim, policy_dims, action_dim)
+        self.value_fun = build_mlp(state_dim + 1, vf_dims, 1)
+        self.cost_fun = build_mlp(state_dim + 1, cf_dims, 1)
+        # if cnt_round == 0: 
+        #     # initialization
+        #     self.q_network = self.build_network()
+        #     if os.listdir(self.dic_path["PATH_TO_MODEL"]):
+        #         self.q_network.load_weights(
+        #             os.path.join(self.dic_path["PATH_TO_MODEL"], "round_0_inter_{0}.h5".format(intersection_id)), 
+        #             by_name=True)
+        #     self.q_network_bar = self.build_network_from_copy(self.q_network)
+        # else:
+        #     try:
+        #         if best_round:
+        #             # use model pool
+        #             self.load_network("round_{0}_inter_{1}".format(best_round,self.intersection_id))
 
-                    if bar_round and bar_round != best_round and cnt_round > 10:
-                        # load q_bar network from model pool
-                        self.load_network_bar("round_{0}_inter_{1}".format(bar_round,self.intersection_id))
-                    else:
-                        if "UPDATE_Q_BAR_EVERY_C_ROUND" in self.dic_agent_conf:
-                            if self.dic_agent_conf["UPDATE_Q_BAR_EVERY_C_ROUND"]:
-                                self.load_network_bar("round_{0}".format(
-                                    max((best_round - 1) // self.dic_agent_conf["UPDATE_Q_BAR_FREQ"] * self.dic_agent_conf["UPDATE_Q_BAR_FREQ"], 0),
-                                    self.intersection_id))
-                            else:
-                                self.load_network_bar("round_{0}_inter_{1}".format(
-                                    max(best_round - self.dic_agent_conf["UPDATE_Q_BAR_FREQ"], 0),
-                                    self.intersection_id))
-                        else:
-                            self.load_network_bar("round_{0}_inter_{1}".format(
-                                max(best_round - self.dic_agent_conf["UPDATE_Q_BAR_FREQ"], 0), self.intersection_id))
+        #             if bar_round and bar_round != best_round and cnt_round > 10:
+        #                 # load q_bar network from model pool
+        #                 self.load_network_bar("round_{0}_inter_{1}".format(bar_round,self.intersection_id))
+        #             else:
+        #                 if "UPDATE_Q_BAR_EVERY_C_ROUND" in self.dic_agent_conf:
+        #                     if self.dic_agent_conf["UPDATE_Q_BAR_EVERY_C_ROUND"]:
+        #                         self.load_network_bar("round_{0}".format(
+        #                             max((best_round - 1) // self.dic_agent_conf["UPDATE_Q_BAR_FREQ"] * self.dic_agent_conf["UPDATE_Q_BAR_FREQ"], 0),
+        #                             self.intersection_id))
+        #                     else:
+        #                         self.load_network_bar("round_{0}_inter_{1}".format(
+        #                             max(best_round - self.dic_agent_conf["UPDATE_Q_BAR_FREQ"], 0),
+        #                             self.intersection_id))
+        #                 else:
+        #                     self.load_network_bar("round_{0}_inter_{1}".format(
+        #                         max(best_round - self.dic_agent_conf["UPDATE_Q_BAR_FREQ"], 0), self.intersection_id))
 
-                else:
-                    # not use model pool
-                    #TODO how to load network for multiple intersections?
-                    # print('init q load')
-                    self.load_network("round_{0}_inter_{1}".format(cnt_round-1, self.intersection_id))
-                    # print('init q_bar load')
-                    if "UPDATE_Q_BAR_EVERY_C_ROUND" in self.dic_agent_conf:
-                        if self.dic_agent_conf["UPDATE_Q_BAR_EVERY_C_ROUND"]:
-                            self.load_network_bar("round_{0}_inter_{1}".format(
-                                max((cnt_round - 1) // self.dic_agent_conf["UPDATE_Q_BAR_FREQ"] * self.dic_agent_conf["UPDATE_Q_BAR_FREQ"], 0),
-                                self.intersection_id))
-                        else:
-                            self.load_network_bar("round_{0}_inter_{1}".format(
-                                max(cnt_round - self.dic_agent_conf["UPDATE_Q_BAR_FREQ"], 0),
-                                self.intersection_id))
-                    else:
-                        self.load_network_bar("round_{0}_inter_{1}".format(
-                            max(cnt_round - self.dic_agent_conf["UPDATE_Q_BAR_FREQ"], 0), self.intersection_id))
-            except:
-                print("fail to load network, current round: {0}".format(cnt_round))
+        #         else:
+        #             # not use model pool
+        #             #TODO how to load network for multiple intersections?
+        #             # print('init q load')
+        #             self.load_network("round_{0}_inter_{1}".format(cnt_round-1, self.intersection_id))
+        #             # print('init q_bar load')
+        #             if "UPDATE_Q_BAR_EVERY_C_ROUND" in self.dic_agent_conf:
+        #                 if self.dic_agent_conf["UPDATE_Q_BAR_EVERY_C_ROUND"]:
+        #                     self.load_network_bar("round_{0}_inter_{1}".format(
+        #                         max((cnt_round - 1) // self.dic_agent_conf["UPDATE_Q_BAR_FREQ"] * self.dic_agent_conf["UPDATE_Q_BAR_FREQ"], 0),
+        #                         self.intersection_id))
+        #                 else:
+        #                     self.load_network_bar("round_{0}_inter_{1}".format(
+        #                         max(cnt_round - self.dic_agent_conf["UPDATE_Q_BAR_FREQ"], 0),
+        #                         self.intersection_id))
+        #             else:
+        #                 self.load_network_bar("round_{0}_inter_{1}".format(
+        #                     max(cnt_round - self.dic_agent_conf["UPDATE_Q_BAR_FREQ"], 0), self.intersection_id))
+        #     except:
+        #         print("fail to load network, current round: {0}".format(cnt_round))
 
         # decay the epsilon
         """
