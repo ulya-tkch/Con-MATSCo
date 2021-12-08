@@ -19,12 +19,14 @@ from keras.layers.core import Activation
 from keras.utils import np_utils,to_categorical
 from keras.engine.topology import Layer
 from keras.callbacks import EarlyStopping, TensorBoard
-
 ## PyTorch - CPO
 import torch
 import torch.nn as nn
 from models import build_diag_gauss_policy, build_mlp
 from memory import Memory, Trajectory
+from cpo import CPO
+
+
 # SEED=6666
 # random.seed(SEED)
 # np.random.seed(SEED)
@@ -80,6 +82,21 @@ class CoLightAgent(Agent):
         self.num_lanes = np.sum(np.array(list(self.dic_traffic_env_conf["LANE_NUM"].values())))
         self.len_feature=self.compute_len_feature()
         self.memory = self.build_memory()
+
+        state_dim = 36*20
+        action_dim = 36*self.num_actions
+        policy_dims = [64,64]
+        vf_dims = [64,64]
+        cf_dims = [64,64]
+        policy = build_diag_gauss_policy(state_dim, policy_dims, action_dim)
+        value_fun = build_mlp(state_dim + 1, vf_dims, 1)
+        cost_fun = build_mlp(state_dim + 1, cf_dims, 1)
+
+        bias_red_cost = 1.0 ## idk what this does
+        max_constraint_val = 0.25  # kinda random
+        model_name = "point_gather" # lmao
+        self.cpo = CPO(policy, value_fun, cost_fun, model_name=model_name,
+          bias_red_cost=bias_red_cost, max_constraint_val=max_constraint_val)
 
         if cnt_round == 0: 
             # initialization
@@ -304,12 +321,21 @@ class CoLightAgent(Agent):
         else:
             all_output= self.q_network.predict([total_features,total_adjs])
         action,attention =all_output[0],all_output[1]
-        # print("action after model output:", np.array(action).shape)
+
+        ### CPO rohin code
+        total_features_cpo = np.reshape(total_features, [batch_size, -1])
+        self.cpo.policy.eval()
+        with torch.no_grad():
+            policy_input = torch.tensor(total_features_cpo).float()
+            action_dists = self.cpo.policy(policy_input)
+            action = action_dists.sample()
+        action = action.numpy()
+        action = np.reshape(action, [batch_size, self.num_agents, -1])  ### 1x36x4
+        # actions = actions.cpu()
 
 
         #out: [batch,agent,action], att:[batch,layers,agent,head,neighbors]
-        if len(action)>1:
-            # print("len action > 1?")
+        if len(action)>1:   ## actually get's used in prepareXsAndYs holy
             return total_features,total_adjs,action,attention
 
         #[batch,agent,1]
@@ -323,8 +349,6 @@ class CoLightAgent(Agent):
             p=[1-self.dic_agent_conf["EPSILON"],self.dic_agent_conf["EPSILON"]])
         act=possible_action.reshape((batch_size*self.num_agents,2))[np.arange(batch_size*self.num_agents),selection]
         act=np.reshape(act,(batch_size,self.num_agents))
-        # print("action being returned:", act)
-        # print(self.num_actions)
         return act,attention
 
     # CPO tensor requirement
@@ -364,14 +388,21 @@ class CoLightAgent(Agent):
             total_adjs=self.adjacency_index2matrix(np.array(total_adjs))
 
         total_features = np.reshape(total_features, [batch_size, -1])
+        self.cpo.policy.eval()
+        with torch.no_grad():
+            policy_input = torch.tensor(total_features).float()
+            action_dists = self.cpo.policy(policy_input)
+            action = action_dists.sample()
+        
         trajectories_obs = []
         for i in range(batch_size):
             obs = torch.tensor(total_features[i]).float()
             trajectories_obs.append(obs)
 
-        return trajectories_obs
+        return trajectories_obs, action
 
 
+    
     def choose_action(self, count, state):
 
         ''' 
@@ -438,17 +469,12 @@ class CoLightAgent(Agent):
             _reward.append([])
             _cost.append([])
             for j in range(self.num_agents):
-                state, action, next_state, reward, cost, _, _ = sample_slice[i][j]
-                # state, action, next_state, reward, _ = sample_slice[i][j]
+                state, action, next_state, reward, cost, _,_= sample_slice[i][j]
                 _state[i].append(state)
                 _next_state[i].append(next_state)
                 _action[i].append(action)
                 _reward[i].append(reward)
                 _cost[i].append(cost)
-            
-        trajectories_obs = self.tensor_from_state(_state)
-        print(trajectories_obs[0].size(), len(_action[0]), len(_cost[0]))
-
 
         #target: [#agents,#samples,#num_actions]    
         _features,_adjs,q_values,_=self.action_att_predict(_state)   
@@ -471,6 +497,37 @@ class CoLightAgent(Agent):
         self.Y=q_values.copy()
         self.Y_total = [q_values.copy()]
         self.Y_total.append(attention)
+        
+        ### CPO rohin code copy
+        # self.policy.eval()
+
+        # with torch.no_grad():
+        n_trajectories = len(sample_slice)
+        trajectories = np.asarray([Trajectory() for i in range(n_trajectories)])
+        # continue_mask = np.ones(n_trajectories)
+        
+        trajectories_obs, trajectories_actions = self.tensor_from_state(_state) ### IDK IF THIS WORKS
+
+        for i in range(len(n_trajectories)):
+            trajectory = trajectories[i]
+            obs = trajectories_obs[i]
+            actions = trajectories_actions[i]
+            rewards = [torch.tensor(r, dtype = torch.float) for r in _reward[i]]
+            costs = [torch.tensor(c, ctype = torch.float) for c in _cost[i]]
+
+            trajectory.actions = actions
+            trajectory.observations = obs
+            trajectory.rewards = rewards
+            trajectory.costs = costs
+
+        self.memoryCPO = Memory(trajectories)
+
+        # return memory
+
+
+
+
+
         return 
 
     #TODO: MLP_layers should be defined in the conf file

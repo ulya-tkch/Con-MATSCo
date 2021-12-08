@@ -330,7 +330,7 @@ class CoLightAgent(Agent):
             action_dists = self.cpo.policy(policy_input)
             action = action_dists.sample()
         action = action.numpy()
-        action = np.reshape(actions, [batch_size, self.num_agents, -1])  ### 1x36x4
+        action = np.reshape(action, [batch_size, self.num_agents, -1])  ### 1x36x4
         # actions = actions.cpu()
 
 
@@ -469,7 +469,7 @@ class CoLightAgent(Agent):
             _reward.append([])
             _cost.append([])
             for j in range(self.num_agents):
-                state, action, next_state, reward, cost, _ = sample_slice[i][j]
+                state, action, next_state, reward, cost, _,_= sample_slice[i][j]
                 _state[i].append(state)
                 _next_state[i].append(next_state)
                 _action[i].append(action)
