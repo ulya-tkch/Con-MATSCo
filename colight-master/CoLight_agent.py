@@ -513,7 +513,7 @@ class CoLightAgent(Agent):
             obs = trajectories_obs[i]
             actions = trajectories_actions[i]
             rewards = [torch.tensor(r, dtype = torch.float) for r in _reward[i]]
-            costs = [torch.tensor(c, ctype = torch.float) for c in _cost[i]]
+            costs = [torch.tensor(c, dtype = torch.float) for c in _cost[i]]
 
             trajectory.actions = actions
             trajectory.observations = obs
