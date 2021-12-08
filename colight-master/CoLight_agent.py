@@ -394,12 +394,16 @@ class CoLightAgent(Agent):
             action_dists = self.cpo.policy(policy_input)
             action = action_dists.sample()
         
-        trajectories_obs = []
-        for i in range(batch_size):
-            obs = torch.tensor(total_features[i]).float()
-            trajectories_obs.append(obs)
+        trajectories_obs = [torch.tensor(o).float() for o in total_features]
+        trajectories_actions = [x for x in action]
+        # for i in range(batch_size):
+        #     obs = [torch.tensor(o).float() for o in total_features[i]]
+        #     act = [x for x in action[i]]
+        #     # obs = torch.tensor(total_features[i]).float()
+        #     trajectories_obs.append(obs)
+        #     trajectories_actions.append(act)
 
-        return trajectories_obs, action
+        return trajectories_obs, trajectories_actions
 
 
     
@@ -502,18 +506,23 @@ class CoLightAgent(Agent):
         # self.policy.eval()
 
         # with torch.no_grad():
-        n_trajectories = len(sample_slice)
+        # n_trajectories = len(sample_slice)
+        n_trajectories = 1  ## this will screw everything up
         trajectories = np.asarray([Trajectory() for i in range(n_trajectories)])
         # continue_mask = np.ones(n_trajectories)
         
         trajectories_obs, trajectories_actions = self.tensor_from_state(_state) ### IDK IF THIS WORKS
+        _reward = np.array(_reward)
+        _reward = np.reshape(_reward, [len(sample_slice), -1])
+        _cost = np.array(_cost)
+        _cost = np.reshape(_cost, [len(sample_slice), -1])
 
         for i in range(n_trajectories):
             trajectory = trajectories[i]
-            obs = trajectories_obs[i]
-            actions = trajectories_actions[i]
-            rewards = [torch.tensor(r, dtype = torch.float) for r in _reward[i]]
-            costs = [torch.tensor(c, dtype = torch.float) for c in _cost[i]]
+            obs = trajectories_obs
+            actions = trajectories_actions
+            rewards = [torch.tensor(np.sum(r), dtype = torch.float) for r in _reward]
+            costs = [torch.tensor(np.sum(c), dtype = torch.float) for c in _cost]
 
             trajectory.actions = actions
             trajectory.observations = obs

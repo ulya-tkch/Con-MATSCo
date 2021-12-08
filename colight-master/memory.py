@@ -19,6 +19,7 @@ class Memory:
         self.trajectories = trajectories
         self.trajectory_len = len(trajectories[0].observations)
         self.n_trajectories = len(trajectories)
+        # print(self.n_trajectories)
 
     def sample(self):
         observations = torch.cat([torch.stack(trajectory.observations) for trajectory in self.trajectories])

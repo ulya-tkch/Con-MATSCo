@@ -282,11 +282,14 @@ class Updater:
 
     def update_network(self,i):
         print('update agent %d'%i)
+
+        print("starting with CPO training first")
+        print("------------Holy------------")
         
         ## idk if it'll work or not
-        # self.cpo.train(self.memoryCPO)
-        # print("CPO training Done")
-        # print("---------------")
+        self.agents[i].cpo.train(self.agents[i].memoryCPO)
+        print("CPO training Done")
+        print("---------------")
 
         self.agents[i].train_network(self.dic_exp_conf)
         if self.dic_traffic_env_conf["ONE_MODEL"]:

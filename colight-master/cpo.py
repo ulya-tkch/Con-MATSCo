@@ -11,6 +11,7 @@ from torch_utils.distribution_utils import mean_kl_first_fixed
 from optimization_utils.hvp import get_Hvp_fun
 from optimization_utils.line_search import line_search
 from torch_utils.torch_utils import flat_grad, get_device, get_flat_params, normalize, set_params
+from sys import exit
 
 save_dir = 'save-dir'
 
@@ -65,10 +66,11 @@ class CPO:
         states_w_time_prev = None
         disc_rewards_prev = None
         disc_costs_prev = None
+        self.memory = memory
 
         # while self.episode_num < n_episodes:
-        #     start_time = dt.now()
-        #     self.episode_num += 1
+        start_time = dt.now()
+        self.episode_num += 1
 
         # memory = self.simulator.run_sim()
         observations, actions, rewards, costs = memory.sample()
@@ -79,7 +81,9 @@ class CPO:
         T = memory.trajectory_len
         time = torch.cat([torch.arange(size).float() for size in trajectory_sizes])
         time = torch.unsqueeze(time, dim=1) / T
+        print(observations.size(), time.size(), actions.size(), costs.size())
         states_w_time = torch.cat([observations, time], dim=1)
+        # exit()
 
         disc_rewards = torch.zeros(N)
         disc_costs = torch.zeros(N)
@@ -158,7 +162,7 @@ class CPO:
         reward_loss = -torch.mean(imp_sampling * reward_advs)
         reward_grad = flat_grad(reward_loss, self.policy.parameters(), retain_graph=True)
         # Change to torch.matmul
-        constraint_loss = torch.sum(imp_sampling * constraint_advs) / memory.n_trajectories
+        constraint_loss = torch.sum(imp_sampling * constraint_advs) / self.memory.n_trajectories
         constraint_grad = flat_grad(constraint_loss, self.policy.parameters(), retain_graph=True)
 
         mean_kl = mean_kl_first_fixed(action_dists, action_dists)
@@ -196,7 +200,7 @@ class CPO:
                 imp_sampling = torch.exp(test_probs - log_action_probs.detach())
 
                 test_loss = -torch.mean(imp_sampling * reward_advs)
-                test_cost = torch.sum(imp_sampling * constraint_advs) / memory.n_trajectories
+                test_cost = torch.sum(imp_sampling * constraint_advs) / self.memory.n_trajectories
                 test_kl = mean_kl_first_fixed(action_dists, test_dists)
 
                 loss_improv_cond = (test_loss - reward_loss) / (step_len * exp_loss_improv) >= self.line_search_accept_ratio
