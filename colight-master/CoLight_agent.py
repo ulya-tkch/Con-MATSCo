@@ -508,7 +508,7 @@ class CoLightAgent(Agent):
         
         trajectories_obs, trajectories_actions = self.tensor_from_state(_state) ### IDK IF THIS WORKS
 
-        for i in range(len(n_trajectories)):
+        for i in range(n_trajectories):
             trajectory = trajectories[i]
             obs = trajectories_obs[i]
             actions = trajectories_actions[i]
