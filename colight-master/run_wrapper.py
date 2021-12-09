@@ -17,9 +17,9 @@ if __name__ == '__main__':
 
     # Populate the params used to uniquely store the results, logs etc.
 
-    date = '01'  # Expected to be a length 2 string which is the date of run
+    date = '09'  # Expected to be a length 2 string which is the date of run
     month = '12'  # Expected to be a length 2 string which is the month of run
-    hour = '13'  # Expected to be a length 2 string which is the hour of run
+    hour = '15'  # Expected to be a length 2 string which is the hour of run
     ident = 'test_cpo'  # Expected to be a string of your choosing that can ensure uniqueness
 
     # Initialize control variables related to model training

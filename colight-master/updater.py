@@ -287,7 +287,7 @@ class Updater:
         print("------------Holy------------")
         
         ## idk if it'll work or not
-        self.agents[i].cpo.train(self.agents[i].memoryCPO)
+        # self.agents[i].cpo.train(self.agents[i].memoryCPO)
         print("CPO training Done")
         print("---------------")
 

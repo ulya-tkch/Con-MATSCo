@@ -67,84 +67,86 @@ class CPO:
         disc_rewards_prev = None
         disc_costs_prev = None
         self.memory = memory
+        self.episode_num = 0
 
         # while self.episode_num < n_episodes:
-        start_time = dt.now()
-        self.episode_num += 1
+        while self.episode_num < 10:
+            start_time = dt.now()
+            self.episode_num += 1
 
-        # memory = self.simulator.run_sim()
-        observations, actions, rewards, costs = memory.sample()
+            # memory = self.simulator.run_sim()
+            observations, actions, rewards, costs = memory.sample()
 
-        trajectory_sizes = torch.tensor([len(trajectory) for trajectory in memory])
-        trajectory_limits = torch.cat([torch.tensor([0]), torch.cumsum(trajectory_sizes, dim=-1)])
-        N = np.sum([len(trajectory) for trajectory in memory])
-        T = memory.trajectory_len
-        time = torch.cat([torch.arange(size).float() for size in trajectory_sizes])
-        time = torch.unsqueeze(time, dim=1) / T
-        print(observations.size(), time.size(), actions.size(), costs.size())
-        states_w_time = torch.cat([observations, time], dim=1)
-        # exit()
+            trajectory_sizes = torch.tensor([len(trajectory) for trajectory in memory])
+            trajectory_limits = torch.cat([torch.tensor([0]), torch.cumsum(trajectory_sizes, dim=-1)])
+            N = np.sum([len(trajectory) for trajectory in memory])
+            T = memory.trajectory_len
+            time = torch.cat([torch.arange(size).float() for size in trajectory_sizes])
+            time = torch.unsqueeze(time, dim=1) / T
+            print(observations.size(), time.size(), actions.size(), costs.size())
+            states_w_time = torch.cat([observations, time], dim=1)
+            # exit()
 
-        disc_rewards = torch.zeros(N)
-        disc_costs = torch.zeros(N)
-        reward_advs = torch.zeros(N)
-        cost_advs = torch.zeros(N)
+            disc_rewards = torch.zeros(N)
+            disc_costs = torch.zeros(N)
+            reward_advs = torch.zeros(N)
+            cost_advs = torch.zeros(N)
 
-        with torch.no_grad():
-            state_vals = self.value_fun(states_w_time.to(self.device)).view(-1).cpu()
-            state_costs = self.cost_fun(states_w_time.to(self.device)).view(-1).cpu()
+            with torch.no_grad():
+                state_vals = self.value_fun(states_w_time.to(self.device)).view(-1).cpu()
+                state_costs = self.cost_fun(states_w_time.to(self.device)).view(-1).cpu()
 
-        for start, end in zip(trajectory_limits[:-1], trajectory_limits[1:]):
-            disc_rewards[start:end] = discount(rewards[start:end], self.discount_val)
-            disc_costs[start:end] = discount(costs[start:end], self.discount_cost)
-            reward_advs[start:end] = compute_advs(rewards[start:end],
-                                                    state_vals[start:end],
-                                                    self.discount_val,
-                                                    self.bias_red_val)
-            cost_advs[start:end] = compute_advs(costs[start:end],
-                                                state_costs[start:end],
-                                                self.discount_cost,
-                                                self.bias_red_cost)
+            for start, end in zip(trajectory_limits[:-1], trajectory_limits[1:]):
+                disc_rewards[start:end] = discount(rewards[start:end], self.discount_val)
+                disc_costs[start:end] = discount(costs[start:end], self.discount_cost)
+                reward_advs[start:end] = compute_advs(rewards[start:end],
+                                                        state_vals[start:end],
+                                                        self.discount_val,
+                                                        self.bias_red_val)
+                cost_advs[start:end] = compute_advs(costs[start:end],
+                                                    state_costs[start:end],
+                                                    self.discount_cost,
+                                                    self.bias_red_cost)
 
-        reward_advs -= reward_advs.mean()
-        reward_advs /= reward_advs.std()
-        cost_advs -= reward_advs.mean()
-        cost_advs /= cost_advs.std()
+            reward_advs -= reward_advs.mean()
+            reward_advs /= reward_advs.std()
+            cost_advs -= reward_advs.mean()
+            cost_advs /= cost_advs.std()
 
-        if states_w_time_prev is not None:
-            states_w_time_train = torch.cat([states_w_time, states_w_time_prev])
-            disc_rewards_train = torch.cat([disc_rewards, disc_rewards_prev])
-            disc_costs_train = torch.cat([disc_costs, disc_costs_prev])
-        else:
-            states_w_time_train = states_w_time
-            disc_rewards_train = disc_rewards
-            disc_costs_train = disc_costs
+            if states_w_time_prev is not None:
+                states_w_time_train = torch.cat([states_w_time, states_w_time_prev])
+                disc_rewards_train = torch.cat([disc_rewards, disc_rewards_prev])
+                disc_costs_train = torch.cat([disc_costs, disc_costs_prev])
+            else:
+                states_w_time_train = states_w_time
+                disc_rewards_train = disc_rewards
+                disc_costs_train = disc_costs
 
-        states_w_time_prev = states_w_time
-        disc_rewards_prev = disc_rewards
-        disc_costs_prev = disc_costs
+            states_w_time_prev = states_w_time
+            disc_rewards_prev = disc_rewards
+            disc_costs_prev = disc_costs
 
-#             constraint_cost = torch.mean(torch.tensor([disc_costs[start] for start in trajectory_limits[:-1]]))
-        constraint_cost = torch.mean(torch.tensor([torch.sum(torch.tensor(trajectory.costs))
-                                                    for trajectory in memory]))
+    #             constraint_cost = torch.mean(torch.tensor([disc_costs[start] for start in trajectory_limits[:-1]]))
+            constraint_cost = torch.mean(torch.tensor([torch.sum(torch.tensor(trajectory.costs))
+                                                        for trajectory in memory]))
 
-        self.update_policy(observations, actions, reward_advs, cost_advs, constraint_cost)
-        self.update_nn_regressor(self.value_fun, self.value_optimizer, states_w_time_train,
-                                    disc_rewards_train, self.val_l2_reg, self.val_iters)
-        self.update_nn_regressor(self.cost_fun, self.cost_optimizer, states_w_time_train,
-                                    disc_costs_train, self.cost_l2_reg, self.cost_iters)
+            self.update_policy(observations, actions, reward_advs, cost_advs, constraint_cost)
+            self.update_nn_regressor(self.value_fun, self.value_optimizer, states_w_time_train,
+                                        disc_rewards_train, self.val_l2_reg, self.val_iters)
+            self.update_nn_regressor(self.cost_fun, self.cost_optimizer, states_w_time_train,
+                                        disc_costs_train, self.cost_l2_reg, self.cost_iters)
 
-        reward_sums = [np.sum(trajectory.rewards) for trajectory in memory]
-        cost_sums = [np.sum(trajectory.costs) for trajectory in memory]
-        self.mean_rewards.append(np.mean(reward_sums))
-        self.mean_costs.append(np.mean(cost_sums))
-        self.elapsed_time += dt.now() - start_time
+            reward_sums = [np.sum(trajectory.rewards) for trajectory in memory]
+            cost_sums = [np.sum(trajectory.costs) for trajectory in memory]
+            self.mean_rewards.append(np.mean(reward_sums))
+            self.mean_costs.append(np.mean(cost_sums))
+            self.elapsed_time += dt.now() - start_time
 
-        if self.print_updates:
-            self.print_update()
+            if self.print_updates:
+                self.print_update()
 
-        if self.save_every and not self.episode_num % self.save_every:
-            self.save_session()
+            if self.save_every and not self.episode_num % self.save_every:
+                self.save_session()
 
     def update_policy(self, observations, actions, reward_advs, constraint_advs, J_c):
         self.policy.train()
