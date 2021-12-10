@@ -51,6 +51,7 @@ class CPO:
         self.states_w_time_prev = None
         self.disc_rewards_prev = None
         self.disc_costs_prev = None
+        self.memory = None
 
         if not model_name and continue_from_file:
             raise Exception('Argument continue_from_file to __init__ method of ' \
@@ -127,6 +128,13 @@ class CPO:
                 states_w_time_train = states_w_time
                 disc_rewards_train = disc_rewards
                 disc_costs_train = disc_costs
+
+            states_w_time_prev = states_w_time
+            disc_rewards_prev = disc_rewards
+            disc_costs_prev = disc_costs
+            self.states_w_time_prev = states_w_time_prev
+            self.disc_rewards_prev = disc_rewards_prev
+            self.disc_costs_prev = disc_costs_prev
 
     #             constraint_cost = torch.mean(torch.tensor([disc_costs[start] for start in trajectory_limits[:-1]]))
             constraint_cost = torch.mean(torch.tensor([torch.sum(torch.tensor(trajectory.costs))

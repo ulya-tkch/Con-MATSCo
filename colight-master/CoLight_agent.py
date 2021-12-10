@@ -437,28 +437,29 @@ class CoLightAgent(Agent):
 
         # act[0][block_act_bool] = curr_state[block_act_bool] - 1
 
-        return act[0],attention[0] 
-
+        return act[0], attention[0]
 
     def prepare_Xs_Y(self, memory, dic_exp_conf):
         """
         
         """
-        ind_end = len(memory)
-        print("memory size before forget: {0}".format(ind_end))
-        # use all the samples to pretrain, i.e., without forgetting
-        if dic_exp_conf["PRETRAIN"] or dic_exp_conf["AGGREGATE"]:
-            sample_slice = memory
-        # forget
-        else:
-            ind_sta = max(0, ind_end - self.dic_agent_conf["MAX_MEMORY_LEN"])
-            memory_after_forget = memory[ind_sta: ind_end]
-            print("memory size after forget:", len(memory_after_forget))
+        # ind_end = len(memory)
+        # print("memory size before forget: {0}".format(ind_end))
+        # # use all the samples to pretrain, i.e., without forgetting
+        # if dic_exp_conf["PRETRAIN"] or dic_exp_conf["AGGREGATE"]:
+        #     sample_slice = memory
+        # # forget
+        # else:
+        #     ind_sta = max(0, ind_end - self.dic_agent_conf["MAX_MEMORY_LEN"])
+        #     memory_after_forget = memory[ind_sta: ind_end]
+        #     print("memory size after forget:", len(memory_after_forget))
+        #
+        #     # sample the memory
+        #     sample_size = min(self.dic_agent_conf["SAMPLE_SIZE"], len(memory_after_forget))
+        #     sample_slice = random.sample(memory_after_forget, sample_size)
+        #     print("memory samples number:", sample_size)
 
-            # sample the memory
-            sample_size = min(self.dic_agent_conf["SAMPLE_SIZE"], len(memory_after_forget))
-            sample_slice = random.sample(memory_after_forget, sample_size)
-            print("memory samples number:", sample_size)
+        sample_slice = memory
 
         _state = []
         _next_state = []

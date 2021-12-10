@@ -46,8 +46,12 @@ def compute_min_switching_metric(base_dir, num_inter):
 
         # Load the pickle file for the intersection
 
-        f = open(os.path.join(base_dir, "inter_{0}.pkl".format(inter_idx)), "rb")
-        states_arr = pickle.load(f)
+        try:
+            f = open(os.path.join(base_dir, "inter_{0}.pkl".format(inter_idx)), "rb")
+            states_arr = pickle.load(f)
+        except:
+            f.close()
+            continue
 
         num_ts = len(states_arr)
 
@@ -95,8 +99,11 @@ def compute_min_switching_metric(base_dir, num_inter):
 
         # Identify violating switches
 
-        sig_switch_arr = int_sig_switch_dict.get(inter_idx)
+        sig_switch_arr = int_sig_switch_dict.get(inter_idx, np.array([]))
         num_switches = sig_switch_arr.shape[0]
+
+        if num_switches == 0:
+            continue
 
         violating_switch_bool = sig_switch_arr[:, 2] < constraint_const_dict.get('min_green_time')
         exempt_switch_bool = sig_switch_arr[:, 0] == -1
