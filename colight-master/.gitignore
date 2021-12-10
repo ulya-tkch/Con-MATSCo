@@ -8,3 +8,4 @@
 /temp.tensorboard/*
 /frontend/*
 /model/*
+/save-dir/*
