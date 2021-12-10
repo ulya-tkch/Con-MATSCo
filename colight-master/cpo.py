@@ -70,7 +70,7 @@ class CPO:
         self.episode_num = 0
 
         # while self.episode_num < n_episodes:
-        while self.episode_num < 10:
+        while self.episode_num < 1:
             start_time = dt.now()
             self.episode_num += 1
 
