@@ -287,11 +287,11 @@ class Updater:
         print("------------Holy------------")
         
         ## idk if it'll work or not
-        # self.agents[i].cpo.train(self.agents[i].memoryCPO)
+        self.agents[i].cpo.train(self.agents[i].memoryCPO)
         print("CPO training Done")
         print("---------------")
 
-        self.agents[i].train_network(self.dic_exp_conf)
+        # self.agents[i].train_network(self.dic_exp_conf)
         if self.dic_traffic_env_conf["ONE_MODEL"]:
             if self.dic_exp_conf["PRETRAIN"]:
                 self.agents[i].q_network.save(os.path.join(self.dic_path["PATH_TO_PRETRAIN_MODEL"],
