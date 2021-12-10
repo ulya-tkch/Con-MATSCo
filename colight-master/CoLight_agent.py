@@ -85,15 +85,15 @@ class CoLightAgent(Agent):
 
         state_dim = 36*20
         action_dim = 36*self.num_actions
-        policy_dims = [64,64]
-        vf_dims = [64,64]
-        cf_dims = [64,64]
+        policy_dims = [640,640]
+        vf_dims = [640,640]
+        cf_dims = [640,640]
         policy = build_diag_gauss_policy(state_dim, policy_dims, action_dim)
         value_fun = build_mlp(state_dim + 1, vf_dims, 1)
         cost_fun = build_mlp(state_dim + 1, cf_dims, 1)
 
         bias_red_cost = 1.0 ## idk what this does
-        max_constraint_val = 0.25  # kinda random
+        max_constraint_val = 1.0 # kinda random
         model_name = "point_gather" # lmao
         self.cpo = CPO(policy, value_fun, cost_fun, model_name=model_name,
           bias_red_cost=bias_red_cost, max_constraint_val=max_constraint_val)

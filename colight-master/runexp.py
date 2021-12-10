@@ -40,7 +40,7 @@ def parse_args_exp():
     global TOP_K_ADJACENCY_LANE
     TOP_K_ADJACENCY_LANE=5
     global NUM_ROUNDS
-    NUM_ROUNDS=20
+    NUM_ROUNDS=50
     global EARLY_STOP
     EARLY_STOP=False
     global NEIGHBOR
