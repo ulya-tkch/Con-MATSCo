@@ -18,7 +18,7 @@ PRETRAIN=False
 NUM_ROUNDS=50
 EARLY_STOP=False 
 NEIGHBOR=False
-SAVEREPLAY=False
+SAVEREPLAY=True
 ADJACENCY_BY_CONNECTION_OR_GEO=False
 hangzhou_archive=True
 ANON_PHASE_REPRE=[]
@@ -47,7 +47,7 @@ def parse_args_exp():
     # TAKE CARE
     NEIGHBOR=False
     global SAVEREPLAY # if you want to relay your simulation, set it to be True
-    SAVEREPLAY=False
+    SAVEREPLAY=True
     global ADJACENCY_BY_CONNECTION_OR_GEO
     # TAKE CARE
     ADJACENCY_BY_CONNECTION_OR_GEO=False

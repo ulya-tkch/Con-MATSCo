@@ -395,7 +395,7 @@ if __name__=="__main__":
 
 
 
-            "SAVEREPLAY": False,
+            "SAVEREPLAY": True,
             "NUM_ROW": 3,
             "NUM_COL": 3,
 

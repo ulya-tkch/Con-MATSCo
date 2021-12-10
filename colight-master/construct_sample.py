@@ -151,7 +151,7 @@ class ConstructSample:
         if cur_phase != -1:
             if cur_phase == action:
                 if time_this_phase <= MIN_SWITCH_TIME:
-                    r += -1.5
+                    r += -3.0
         
         return r
 
@@ -322,7 +322,7 @@ if __name__=="__main__":
 
 
 
-            "SAVEREPLAY": False,
+            "SAVEREPLAY": True,
             "NUM_ROW": 3,
             "NUM_COL": 3,
 
