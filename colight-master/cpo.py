@@ -48,6 +48,9 @@ class CPO:
         self.device = get_device()
         self.mean_rewards = []
         self.mean_costs = []
+        self.states_w_time_prev = None
+        self.disc_rewards_prev = None
+        self.disc_costs_prev = None
 
         if not model_name and continue_from_file:
             raise Exception('Argument continue_from_file to __init__ method of ' \
@@ -63,9 +66,9 @@ class CPO:
             self.load_session()
 
     def train(self, memory):
-        states_w_time_prev = None
-        disc_rewards_prev = None
-        disc_costs_prev = None
+        states_w_time_prev = self.states_w_time_prev
+        disc_rewards_prev = self.disc_rewards_prev
+        disc_costs_prev = self.disc_costs_prev
         self.memory = memory
         self.episode_num = 0
         self.policy.train()
@@ -73,7 +76,7 @@ class CPO:
         self.cost_fun.train()
 
         # while self.episode_num < n_episodes:
-        while self.episode_num < 10:
+        while self.episode_num < 1:
             start_time = dt.now()
             self.episode_num += 1
 
@@ -125,10 +128,6 @@ class CPO:
                 disc_rewards_train = disc_rewards
                 disc_costs_train = disc_costs
 
-            states_w_time_prev = states_w_time
-            disc_rewards_prev = disc_rewards
-            disc_costs_prev = disc_costs
-
     #             constraint_cost = torch.mean(torch.tensor([disc_costs[start] for start in trajectory_limits[:-1]]))
             constraint_cost = torch.mean(torch.tensor([torch.sum(torch.tensor(trajectory.costs))
                                                         for trajectory in memory]))
@@ -150,6 +149,10 @@ class CPO:
 
             if self.save_every and not self.episode_num % self.save_every:
                 self.save_session()
+        
+        self.states_w_time_prev = states_w_time
+        self.disc_rewards_prev = disc_rewards
+        self.disc_costs_prev = disc_costs
 
     def update_policy(self, observations, actions, reward_advs, constraint_advs, J_c):
         self.policy.train()
