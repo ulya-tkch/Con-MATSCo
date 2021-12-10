@@ -68,6 +68,9 @@ class CPO:
         disc_costs_prev = None
         self.memory = memory
         self.episode_num = 0
+        self.policy.train()
+        self.value_fun.train()
+        self.cost_fun.train()
 
         # while self.episode_num < n_episodes:
         while self.episode_num < 10:
