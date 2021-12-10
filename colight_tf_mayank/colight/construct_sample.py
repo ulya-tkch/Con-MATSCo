@@ -138,7 +138,7 @@ class ConstructSample:
 
         return reward
 
-    def cal_reward(self, rs, rewards_components):
+    def cal_reward(self, rs, rs_og, rewards_components):
         r = 0
         for component, weight in rewards_components.items():
             if weight == 0:
@@ -148,14 +148,25 @@ class ConstructSample:
             if rs[component] is None:
                 continue
             r += rs[component] * weight
+        
+        ## rohin code for MIN_SWITCH_TIME
+        cur_phase = rs_og["state"]["cur_phase"][0]
+        time_this_phase = rs_og["state"]["time_this_phase"][0]
+        action = rs_og["action"]
+
+        MIN_SWTICH_TIME = 15
+        if cur_phase !=-1:
+            if cur_phase == action:
+                if time_this_phase <= MIN_SWTICH_TIME:
+                    r+= -3.0   ##  penalty
         return r
 
     def construct_reward(self,rewards_components,time, i):
 
         rs = self.logging_data_list_per_gen[i][time + self.measure_time - 1]
         assert time + self.measure_time - 1 == rs["time"]
-        rs = self.get_reward_from_features(rs['state'])
-        r_instant = self.cal_reward(rs, rewards_components)
+        rs_new = self.get_reward_from_features(rs['state'])
+        r_instant = self.cal_reward(rs_new, rs, rewards_components)
 
         # average
         list_r = []
@@ -164,8 +175,8 @@ class ConstructSample:
             rs = self.logging_data_list_per_gen[i][t]
             assert t == rs["time"]
 
-            rs = self.get_reward_from_features(rs['state'])
-            r = self.cal_reward(rs, rewards_components)
+            rs_new = self.get_reward_from_features(rs['state'])
+            r = self.cal_reward(rs_new, rs, rewards_components)
 
             list_r.append(r)
 
