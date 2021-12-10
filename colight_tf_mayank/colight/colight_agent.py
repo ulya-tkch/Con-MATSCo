@@ -127,8 +127,8 @@ class CoLightAgent(Agent):
                     if "UPDATE_Q_BAR_EVERY_C_ROUND" in self.dic_agent_conf:
                         if self.dic_agent_conf["UPDATE_Q_BAR_EVERY_C_ROUND"]:
                             self.load_network_bar("round_{0}_inter_{1}".format(
-                                max((cnt_round - 1) // self.dic_agent_conf["UPDATE_Q_BAR_FREQ"] *
-                                    self.dic_agent_conf["UPDATE_Q_BAR_FREQ"], 0),
+                                max((cnt_round // self.dic_agent_conf["UPDATE_Q_BAR_FREQ"] *
+                                    self.dic_agent_conf["UPDATE_Q_BAR_FREQ"]) - 1, 0),
                                 self.intersection_id))
                         else:
                             self.load_network_bar("round_{0}_inter_{1}".format(
@@ -475,6 +475,7 @@ class CoLightAgent(Agent):
 
         for i in range(len(sample_slice)):
             for j in range(self.num_agents):
+                # print(_reward[i][j], self.dic_agent_conf["GAMMA"] * np.max(target_q_values[i][j]))
                 q_values[i][j][_action[i][j]] = _reward[i][j] / self.dic_agent_conf["NORMAL_FACTOR"] + \
                                                 self.dic_agent_conf["GAMMA"] * np.max(target_q_values[i][j])
 
@@ -590,7 +591,7 @@ class CoLightAgent(Agent):
         act = np.reshape(act, (batch_size, self.num_agents))
         return act, attention
 
-    def choose_action(self, count, state, constr_act=False):
+    def choose_action(self, count, state, constr_act=False, use_bar=False):
 
         """
         choose the best action for current state
@@ -598,7 +599,7 @@ class CoLightAgent(Agent):
         -output: out: [batch,agent,action], att:[batch,layers,agent,head,neighbors]
         """
 
-        act, attention = self.action_att_predict([state])
+        act, attention = self.action_att_predict([state], bar=use_bar)
 
         # if constr_act:
         #
