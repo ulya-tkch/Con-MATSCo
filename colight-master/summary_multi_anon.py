@@ -831,9 +831,9 @@ if __name__ == "__main__":
     args = parse_args_sum()
 
     # args.memo = "0515_afternoon_Colight_6_6_bi"
-    args.memo = "0509_evening_Fixedtime_6_6_bi"
+    args.memo = "1210_cpo_Colight_6_6_bi"
     # args.memo = "0509_evening_MaxPressure_6_6_bi"
-    args.b = True
+    args.b = False
 
 
     # print_samples()
