@@ -144,6 +144,8 @@ class Intersection:
         self.dic_feature = {}  # this second
         self.dic_feature_previous_step = {}  # this second
 
+        self.lane_wait = ([0],[0],[0],[0]) #ulya what length
+
     def build_adjacency_row_lane(self, lane_id_to_global_index_dict):
 
         self.adjacency_row_lanes = []  # order is the entering lane order, each element is list of two lists
@@ -472,9 +474,45 @@ class Intersection:
 
         dic_feature['connectivity'] = self._get_connectivity(self.neighbor_lanes_ENWS)
 
+        dic_feature["lane_wait"] = self._get_lane_wait()
+
         self.dic_feature = dic_feature
 
     # ================= calculate features from current observations ======================
+
+    def _get_car_per_phase_wait(self):
+        # ANON_PHASE_REPRE = {
+        #     1: [0, 1, 0, 1, 0, 0, 0, 0],
+        #     2: [0, 0, 0, 0, 0, 1, 0, 1],
+        #     3: [1, 0, 1, 0, 0, 0, 0, 0],
+        #     4: [0, 0, 0, 0, 1, 0, 1, 0],
+        # }
+        ANON_PHASE_REPE = [[0, 1, 0, 1, 0, 0, 0, 0],[0, 0, 0, 0, 0, 1, 0, 1],[1, 0, 1, 0, 0, 0, 0, 0],[0, 0, 0, 0, 1, 0, 1, 0]]
+        num_vehicles_stopped = self._get_lane_num_vehicle_been_stopped(1, self.list_entering_lanes) # [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+        num_vehicles_stopped = [num_vehicles_stopped[i] for i in range(len(num_vehicles_stopped)) if (i + 1) % 3 != 0 ]
+        car_per_phase_wait = [np.sum(np.logical_and(ANON_PHASE_REPE[i], num_vehicles_stopped)) for i in range(4)]
+        return [1 if cars > 0 else 0 for cars in car_per_phase_wait]
+        
+    def _get_lane_wait(self): 
+        # print("ulya lane wait\n")
+        # print(self.lane_wait)
+        all_phases = [0,1,2,3]
+        curr_state = self.current_phase_index
+        wait_time = self.current_phase_duration
+
+        cars_at_phase = self._get_car_per_phase_wait()
+        # print(cars_at_phase)
+
+        if curr_state in [-1,-2]:
+            for state in all_phases:
+                self.lane_wait[state][-1] += 1.
+        else:
+            for state in all_phases:
+                if state == curr_state and self.lane_wait[state][-1] != 0:
+                    self.lane_wait[state].append(0)
+                else:
+                    self.lane_wait[state][-1] += 1.
+        return self.lane_wait
 
     def _get_adjacency_row(self):
         return self.adjacency_row
@@ -647,6 +685,9 @@ class Intersection:
         raise NotImplementedError
 
     # ================= get functions from outside ======================
+    def get_lane_wait(self):
+        return self.get_lane_wait
+
     def get_current_time(self):
         return self.eng.get_current_time()
 
@@ -664,7 +705,7 @@ class Intersection:
         # print(list_state_features)
         # print(self.dic_feature)
 
-        list_state_features = list_state_features + ['time_this_phase']
+        list_state_features = list_state_features + ['time_this_phase', 'lane_wait']
         dic_state = {state_feature_name: self.dic_feature[state_feature_name] for state_feature_name in
                      list_state_features}
 

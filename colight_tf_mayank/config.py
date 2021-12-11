@@ -144,7 +144,9 @@ dic_traffic_env_conf = {
 
         D_PRESSURE=(1,),
 
-        D_ADJACENCY_MATRIX=(2,)
+        D_ADJACENCY_MATRIX=(2,),
+
+        D_LANE_WAIT=(12,) # ulya reward shaping
     ),
 
     "LIST_STATE_FEATURE": [
@@ -168,7 +170,9 @@ dic_traffic_env_conf = {
         "pressure",
 
         "adjacency_matrix",
-        "adjacency_matrix_lane"
+        "adjacency_matrix_lane",
+
+        "lane_wait"
 
     ],
 

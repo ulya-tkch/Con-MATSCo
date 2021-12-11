@@ -83,7 +83,7 @@ class Generator:
 
                     one_state = state
 
-                    action, _ = self.agents[i].choose_action(step_num, one_state, constr_act=True)
+                    action, _ = self.agents[i].choose_action(step_num, one_state, constr_act=True, use_bar=True)
                     action_list = action
 
                 else:

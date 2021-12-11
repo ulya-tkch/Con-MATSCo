@@ -42,12 +42,12 @@ def parse_args_exp():
     parser = argparse.ArgumentParser()
 
     # The file folder to create/log in
-    parser.add_argument("--memo", type=str, default='1209_test2_Colight_6_6_bi')  # 1_3,2_2,3_3,4_4
+    parser.add_argument("--memo", type=str, default='final_lanemetric_Colight_6_6_real')  # 1_3,2_2,3_3,4_4
     parser.add_argument("--env", type=int, default=1)  # env=1 means you will run CityFlow
     parser.add_argument("--gui", type=bool, default=False)
-    parser.add_argument("--road_net", type=str, default='6_6')  # '1_2') # which road net you are going to run
-    parser.add_argument("--volume", type=str, default='300')  # '300'
-    parser.add_argument("--suffix", type=str, default="0.3_bi")  # 0.3
+    parser.add_argument("--road_net", type=str, default='6_6')  # '6_6') # which road net you are going to run
+    parser.add_argument("--volume", type=str, default='300')  # '300', 'newyork'
+    parser.add_argument("--suffix", type=str, default="0.3_bi")  # 0.3_bi 'real'
 
     global hangzhou_archive
     hangzhou_archive = False
@@ -278,6 +278,8 @@ def main_exp(memo, env, road_net, gui, volume, suffix, mod, cnt, gen, r_all, wor
                 D_ADJACENCY_MATRIX=(2,),
 
                 D_ADJACENCY_MATRIX_LANE=(6,),
+
+                D_LANE_WAIT=(12,),
 
             ),
             "DIC_REWARD_INFO": {

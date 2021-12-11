@@ -149,23 +149,50 @@ class ConstructSample:
                 continue
             r += rs[component] * weight
         
-        ## rohin code for MIN_SWITCH_TIME
-        cur_phase = rs_og["state"]["cur_phase"][0]
-        time_this_phase = rs_og["state"]["time_this_phase"][0]
-        action = rs_og["action"]
+        # Ulya code light fairness time
+        # print("ulya state\n", rs_og["state"]["lane_wait"])
+        lane_wait = rs_og["state"]["lane_wait"]
+        averages = [np.sum(phase) / np.mean(phase) for phase in lane_wait]
+        distances = []
+        for a1 in averages:
+            for a2 in averages:
+                if a1 == a2:
+                    continue
+                div1 = 0 if a2 == 0 else a1 / a2
+                div2 = 0 if a1 == 0 else a2 / a1
+                distances.append(0.5 * (div1 + div2) - 1)
+        
+        # get MAX distance
+        max_distance = max(distances) / 50
+        # print('ulya lane waits: ', lane_wait)
+        # print("ulya distances: ", distances)
+        # print('ulya max distance: ', max_distance)
 
-        MIN_SWTICH_TIME = 15
+        cur_phase = rs_og["state"]["cur_phase"][0]
+        action = rs_og["action"]
         if cur_phase !=-1:
             if cur_phase == action:
-                if time_this_phase <= MIN_SWTICH_TIME:
-                    r+= -3.0   ##  penalty
-        return r
+                r+= -max_distance   ##  penalty of max distance
+        return r        
+
+        # ## rohin code for MIN_SWITCH_TIME
+        # cur_phase = rs_og["state"]["cur_phase"][0]
+        # time_this_phase = rs_og["state"]["time_this_phase"][0]
+        # action = rs_og["action"]
+        # # num_vehicles_stopped = rs_og["state"]["lane_num_vehicle_been_stopped_thres1"] # [0, 30, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0]
+        # MIN_SWTICH_TIME = 15
+        # if cur_phase !=-1:
+        #     if cur_phase == action:
+        #         if time_this_phase <= MIN_SWTICH_TIME:
+        #             r+= -3.0   ##  penalty
+        # return r
 
     def construct_reward(self,rewards_components,time, i):
 
         rs = self.logging_data_list_per_gen[i][time + self.measure_time - 1]
         assert time + self.measure_time - 1 == rs["time"]
         rs_new = self.get_reward_from_features(rs['state'])
+        # print('ULYA intersection: ', i, ' timestep: ', time)
         r_instant = self.cal_reward(rs_new, rs, rewards_components)
 
         # average
