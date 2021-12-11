@@ -406,7 +406,7 @@ class CoLightAgent(Agent):
             os.path.join(file_path, "%s.h5" % file_name),
             custom_objects={'RepeatVector3D': RepeatVector3D})
 
-        print("succeed in loading model %s" % file_name)
+        print("Loading Q: succeed in loading model %s" % file_name)
 
     def load_network_bar(self, file_name, file_path=None):
 
@@ -417,7 +417,7 @@ class CoLightAgent(Agent):
             os.path.join(file_path, "%s.h5" % file_name),
             custom_objects={'RepeatVector3D': RepeatVector3D})
 
-        print("succeed in loading model %s" % file_name)
+        print("Loading Q Bar: succeed in loading model %s" % file_name)
 
     def save_network(self, file_name):
         self.q_network.save(os.path.join(self.dic_path["PATH_TO_MODEL"], "%s.h5" % file_name))
@@ -476,8 +476,23 @@ class CoLightAgent(Agent):
         for i in range(len(sample_slice)):
             for j in range(self.num_agents):
                 # print(_reward[i][j], self.dic_agent_conf["GAMMA"] * np.max(target_q_values[i][j]))
-                q_values[i][j][_action[i][j]] = _reward[i][j] / self.dic_agent_conf["NORMAL_FACTOR"] + \
-                                                self.dic_agent_conf["GAMMA"] * np.max(target_q_values[i][j])
+                # Adding constraint
+                curr_state = _state[i][j]
+                future_state = _next_state[i][j]
+
+                safety_thresh = 15
+
+                base_q_val = _reward[i][j] / self.dic_agent_conf["NORMAL_FACTOR"] + \
+                    self.dic_agent_conf["GAMMA"] * np.max(target_q_values[i][j])
+
+                if not(np.sum(np.array(curr_state['cur_phase']) - np.array(future_state['cur_phase'])) == 0) and \
+                        np.sum(curr_state['cur_phase']) > 0:
+                    if curr_state['time_this_phase'][0] < safety_thresh:
+                        q_values[i][j][_action[i][j]] = base_q_val - 0.1
+                    else:
+                        q_values[i][j][_action[i][j]] = base_q_val + 0.1
+                else:
+                    q_values[i][j][_action[i][j]] = base_q_val
 
         # self.Xs should be: [#agents,#samples,#features+#]
 

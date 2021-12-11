@@ -107,6 +107,8 @@ class ConstructSample:
         state = self.logging_data_list_per_gen[i][time]
         assert time == state["time"]
 
+        # features.append("time_this_phase")
+
         if self.dic_traffic_env_conf["BINARY_PHASE_EXPANSION"]:
             state_after_selection = {}
             for key, value in state["state"].items():
@@ -199,20 +201,26 @@ class ConstructSample:
 
             # construct samples
 
+            list_state_feature = copy.deepcopy(self.dic_traffic_env_conf["LIST_STATE_FEATURE"])
+            list_state_feature.append("time_this_phase")
+
             for time in range(0, total_time - self.measure_time + 1, self.interval):
 
-                state = self.construct_state(self.dic_traffic_env_conf["LIST_STATE_FEATURE"], time, i)
+                state = self.construct_state(list_state_feature, time, i)
+                # state = self.construct_state(self.dic_traffic_env_conf["LIST_STATE_FEATURE"], time, i)
                 reward_instant, reward_average = self.construct_reward(self.dic_traffic_env_conf["DIC_REWARD_INFO"],
                                                                        time, i)
                 action = self.judge_action(time, i)
 
                 if time + self.interval == total_time:
-                    next_state = self.construct_state(self.dic_traffic_env_conf["LIST_STATE_FEATURE"],
-                                                      time + self.interval - 1, i)
+                    next_state = self.construct_state(list_state_feature, time + self.interval - 1, i)
+                    # next_state = self.construct_state(self.dic_traffic_env_conf["LIST_STATE_FEATURE"],
+                    #                                   time + self.interval - 1, i)
 
                 else:
-                    next_state = self.construct_state(self.dic_traffic_env_conf["LIST_STATE_FEATURE"],
-                                                      time + self.interval, i)
+                    next_state = self.construct_state(list_state_feature, time + self.interval, i)
+                    # next_state = self.construct_state(self.dic_traffic_env_conf["LIST_STATE_FEATURE"],
+                    #                                   time + self.interval, i)
 
                 sample = [state, action, next_state, reward_average, reward_instant, time,
                           folder + "-" + "round_{0}".format(self.cnt_round)]

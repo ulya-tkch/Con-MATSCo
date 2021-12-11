@@ -42,12 +42,17 @@ def parse_args_exp():
     parser = argparse.ArgumentParser()
 
     # The file folder to create/log in
-    parser.add_argument("--memo", type=str, default='1210_baseline_Colight_6_6_bi')  # 1_3,2_2,3_3,4_4
+    parser.add_argument("--memo", type=str, default='1210_switch_constraint_ny_Colight_6_6_bi')  # 1_3,2_2,3_3,4_4
     parser.add_argument("--env", type=int, default=1)  # env=1 means you will run CityFlow
     parser.add_argument("--gui", type=bool, default=False)
-    parser.add_argument("--road_net", type=str, default='6_6')  # '1_2') # which road net you are going to run
-    parser.add_argument("--volume", type=str, default='300')  # '300'
-    parser.add_argument("--suffix", type=str, default="0.3_bi")  # 0.3
+    # parser.add_argument("--road_net", type=str, default='6_6')  # '1_2') # which road net you are going to run
+    # parser.add_argument("--volume", type=str, default='300')  # '300'
+    # parser.add_argument("--suffix", type=str, default="0.3_bi")  # 0.3
+
+    parser.add_argument("--road_net", type=str, default='16_3')  # '1_2') # which road net you are going to run
+    parser.add_argument("--volume", type=str, default='newyork')  # '300'
+    parser.add_argument("--suffix", type=str, default="real")  # 0.3
+
 
     global hangzhou_archive
     hangzhou_archive = False
@@ -255,7 +260,7 @@ def main_exp(memo, env, road_net, gui, volume, suffix, mod, cnt, gen, r_all, wor
                 2: [0, 0, 1, 1],
             },
 
-            "LIST_STATE_FEATURE": ["cur_phase","lane_num_vehicle",],
+            "LIST_STATE_FEATURE": ["cur_phase", "lane_num_vehicle"],
             "DIC_FEATURE_DIM": dict(
                 D_LANE_QUEUE_LENGTH=(4,),
                 D_LANE_NUM_VEHICLE=(4,),
@@ -296,7 +301,7 @@ def main_exp(memo, env, road_net, gui, volume, suffix, mod, cnt, gen, r_all, wor
                 "STRAIGHT": 1
             },
             "PHASE": {
-                "anon":ANON_PHASE_REPRE,
+                "anon": ANON_PHASE_REPRE,
             }
         }
 

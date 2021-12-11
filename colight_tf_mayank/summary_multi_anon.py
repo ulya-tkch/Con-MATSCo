@@ -832,7 +832,7 @@ if __name__ == "__main__":
     # args.memo = "1130_18_Fixedtime_6_6_bi_test"
     # args.memo = "0515_afternoon_Colight_6_6_bi"
     # args.memo = "0509_evening_Fixedtime_6_6_bi"
-    args.memo = "1209_test4_Colight_6_6_bi"
+    args.memo = "1210_switch_constraint_ny_Colight_6_6_bi"
     args.b = False
 
 
