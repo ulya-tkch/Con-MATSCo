@@ -163,7 +163,8 @@ class ConstructSample:
                 distances.append(0.5 * (div1 + div2) - 1)
         
         # get MAX distance
-        max_distance = max(distances) / 50
+        # max_distance = max(distances) / 50
+        max_distance = 0
         # print('ulya lane waits: ', lane_wait)
         # print("ulya distances: ", distances)
         # print('ulya max distance: ', max_distance)
