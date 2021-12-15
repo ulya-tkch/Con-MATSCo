@@ -162,17 +162,18 @@ class ConstructSample:
         #         div2 = 0 if a1 == 0 else a2 / a1
         #         distances.append(0.5 * (div1 + div2) - 1)
         
-        # # get MAX distance
+        # get MAX distance
         # max_distance = max(distances) / 50
-        # # print('ulya lane waits: ', lane_wait)
-        # # print("ulya distances: ", distances)
-        # # print('ulya max distance: ', max_distance)
+        max_distance = 0
+        # print('ulya lane waits: ', lane_wait)
+        # print("ulya distances: ", distances)
+        # print('ulya max distance: ', max_distance)
 
-        # cur_phase = rs_og["state"]["cur_phase"][0]
-        # action = rs_og["action"]
-        # if cur_phase !=-1:
-        #     if cur_phase == action:
-        #         r+= -max_distance   ##  penalty of max distance
+        cur_phase = rs_og["state"]["cur_phase"][0]
+        action = rs_og["action"]
+        if cur_phase !=-1:
+            if cur_phase == action:
+                r+= -max_distance   ##  penalty of max distance
         return r        
 
         # ## rohin code for MIN_SWITCH_TIME
