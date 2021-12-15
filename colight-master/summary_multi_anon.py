@@ -14,6 +14,7 @@ mlp.use("agg")
 import matplotlib.pyplot as plt
 
 from compute_constraint_metrics import compute_min_switching_metric
+from compute_constraint_metrics import compute_average_max_distance
 
 #font = {'size': 24}
 #mlp.rc('font', **font)
@@ -267,7 +268,8 @@ def summary_detail_test(memo, total_summary):
             # sig_switch_time_arr = []
 
             round_dir = os.path.join(train_round_dir, round)
-            compute_min_switching_metric(round_dir, num_intersection)
+            # compute_min_switching_metric(round_dir, num_intersection)
+            compute_average_max_distance(round_dir, num_intersection)
 
             for inter_index in range(num_intersection):
 
@@ -568,7 +570,8 @@ def summary_detail_baseline(memo):
 
             list_f = ["inter_%d.pkl" % i for i in range(int(NUM_OF_INTERSECTIONS))]
 
-            compute_min_switching_metric(train_dir, NUM_OF_INTERSECTIONS)
+            # compute_min_switching_metric(train_dir, NUM_OF_INTERSECTIONS)
+            compute_average_max_distance(train_dir, NUM_OF_INTERSECTIONS)
 
             for f in list_f:
 
@@ -831,7 +834,7 @@ if __name__ == "__main__":
     args = parse_args_sum()
 
     # args.memo = "0515_afternoon_Colight_6_6_bi"
-    args.memo = "0509_evening_Fixedtime_6_6_bi"
+    args.memo = "1130_18_Fixedtime_6_6_bi_test_final/"
     # args.memo = "0509_evening_MaxPressure_6_6_bi"
     args.b = True
 

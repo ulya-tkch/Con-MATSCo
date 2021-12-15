@@ -151,28 +151,28 @@ class ConstructSample:
         
         # Ulya code light fairness time
         # print("ulya state\n", rs_og["state"]["lane_wait"])
-        lane_wait = rs_og["state"]["lane_wait"]
-        averages = [np.sum(phase) / np.mean(phase) for phase in lane_wait]
-        distances = []
-        for a1 in averages:
-            for a2 in averages:
-                if a1 == a2:
-                    continue
-                div1 = 0 if a2 == 0 else a1 / a2
-                div2 = 0 if a1 == 0 else a2 / a1
-                distances.append(0.5 * (div1 + div2) - 1)
+        # lane_wait = rs_og["state"]["lane_wait"]
+        # averages = [np.sum(phase) / np.mean(phase) for phase in lane_wait]
+        # distances = []
+        # for a1 in averages:
+        #     for a2 in averages:
+        #         if a1 == a2:
+        #             continue
+        #         div1 = 0 if a2 == 0 else a1 / a2
+        #         div2 = 0 if a1 == 0 else a2 / a1
+        #         distances.append(0.5 * (div1 + div2) - 1)
         
-        # get MAX distance
-        max_distance = max(distances) / 50
-        # print('ulya lane waits: ', lane_wait)
-        # print("ulya distances: ", distances)
-        # print('ulya max distance: ', max_distance)
+        # # get MAX distance
+        # max_distance = max(distances) / 50
+        # # print('ulya lane waits: ', lane_wait)
+        # # print("ulya distances: ", distances)
+        # # print('ulya max distance: ', max_distance)
 
-        cur_phase = rs_og["state"]["cur_phase"][0]
-        action = rs_og["action"]
-        if cur_phase !=-1:
-            if cur_phase == action:
-                r+= -max_distance   ##  penalty of max distance
+        # cur_phase = rs_og["state"]["cur_phase"][0]
+        # action = rs_og["action"]
+        # if cur_phase !=-1:
+        #     if cur_phase == action:
+        #         r+= -max_distance   ##  penalty of max distance
         return r        
 
         # ## rohin code for MIN_SWITCH_TIME

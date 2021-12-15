@@ -67,9 +67,9 @@ class MaxPressureAgent(Agent):
                 self.current_phase_time = 0
             
             ### Hard Constraint
-            if state["time_this_phase"][0] <= 15:
-                print("applying constraint")
-                self.action = state["cur_phase"][0] % 4
+            # if state["time_this_phase"][0] <= 15:
+            #     print("applying constraint")
+            #     self.action = state["cur_phase"][0] % 4
             
             # print(self.action)
             # print("-------------")

@@ -1,0 +1,2 @@
+,traffic,inter_num,traffic_volume,ratio,min_queue_length,min_queue_length_round,min_duration,min_duration_round,final_duration,final_duration_std,convergence_1.2,convergence_1.1,nan_count,min_duration2
+0,"['anon_6_6_300_0.3_bi', '_12_10_17_34_54']",anon,300,0.3,1.5277777777777777,37,inf,0,1227.47,674.47,46,46,0,
